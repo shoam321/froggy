@@ -86,8 +86,33 @@ namespace BluetoothWidget
             // Add screen edge snapping via Windows messages for better "smash" detection
             this.SourceInitialized += MainWindow_SourceInitialized;
             
+            // Check for mascot GIF
+            LoadMascot();
+            
             // Start splash video
             PlaySplashVideo();
+        }
+
+        /// <summary>
+        /// Loads the mascot GIF if it exists.
+        /// </summary>
+        private void LoadMascot()
+        {
+            try
+            {
+                var mascotPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "mascot.gif");
+                if (System.IO.File.Exists(mascotPath))
+                {
+                    var uri = new Uri(mascotPath);
+                    WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MascotImage, new System.Windows.Media.Imaging.BitmapImage(uri));
+                    MascotImage.Visibility = Visibility.Visible;
+                    Console.WriteLine("Mascot loaded!");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"No mascot: {ex.Message}");
+            }
         }
 
         #region Splash Video

@@ -298,10 +298,18 @@ namespace BluetoothWidget
             var pnpBatteries = GetBatteryFromPnpDevices();
             Log($"[PnP Batteries] Got {pnpBatteries.Count} batteries from PnP");
 
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var ble = await GetPairedBleDevicesAsync(cts.Token, pnpBatteries);
-            var classic = await GetPairedClassicBluetoothDevicesAsync(cts.Token, pnpBatteries);
-            var aep = await GetPairedAepDevicesAsync(cts.Token);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // Faster timeout
+            
+            // Run all device scans in parallel for speed
+            var bleTask = GetPairedBleDevicesAsync(cts.Token, pnpBatteries);
+            var classicTask = GetPairedClassicBluetoothDevicesAsync(cts.Token, pnpBatteries);
+            var aepTask = GetPairedAepDevicesAsync(cts.Token);
+            
+            await Task.WhenAll(bleTask, classicTask, aepTask);
+            
+            var ble = bleTask.Result;
+            var classic = classicTask.Result;
+            var aep = aepTask.Result;
 
             // Merge by name to avoid duplicates (many devices appear in multiple enumerations)
             var merged = new Dictionary<string, WindowsBluetoothDevice>(StringComparer.OrdinalIgnoreCase);
