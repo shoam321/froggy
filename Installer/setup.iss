@@ -46,13 +46,16 @@ SolidCompression=yes
 WizardStyle=classic
 WizardSizePercent=100
 
-; Privileges
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+; Privileges - use admin for proper install
+PrivilegesRequired=admin
 
 ; Uninstaller
 UninstallDisplayIcon={app}\{#MyAppExeName}
 UninstallDisplayName={#MyAppName}
+
+; Silent install support
+CloseApplications=yes
+CloseApplicationsFilter=*.exe
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -87,97 +90,10 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: de
 Root: HKCU; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; ValueType: string; ValueName: "{#MyAppName}"; ValueData: """{app}\{#MyAppExeName}"""; Flags: uninsdeletevalue; Tasks: startupicon
 
 [Run]
-; Option to run app after install
-Filename: "{app}\{#MyAppExeName}"; Description: "Launch Froggy now!"; Flags: nowait postinstall skipifsilent
+; Option to run app after install - only if not silent
+Filename: "{app}\{#MyAppExeName}"; Description: "Launch Froggy now!"; Flags: nowait postinstall skipifsilent runascurrentuser
 
 [Code]
-var
-  RetroPage: TWizardPage;
-  AsciiArt: TNewStaticText;
-  FeatureList: TNewStaticText;
-  StatusLbl: TNewStaticText;
-
-procedure InitializeWizard();
-begin
-  // ═══════════════════════════════════════════════════════════════════════════
-  // RETRO WELCOME PAGE
-  // ═══════════════════════════════════════════════════════════════════════════
-  RetroPage := CreateCustomPage(wpWelcome, 'F R O G G Y', 'Bluetooth Battery Monitor v1.0.0');
-  
-  // ASCII Art Title
-  AsciiArt := TNewStaticText.Create(RetroPage);
-  AsciiArt.Parent := RetroPage.Surface;
-  AsciiArt.Caption := 
-    '╔═══════════════════════════════════════╗' + #13#10 +
-    '║                                       ║' + #13#10 +
-    '║     ███████ ██████   ██████   ██████  ║' + #13#10 +
-    '║     ██      ██   ██ ██    ██ ██       ║' + #13#10 +
-    '║     █████   ██████  ██    ██ ██   ███ ║' + #13#10 +
-    '║     ██      ██   ██ ██    ██ ██    ██ ║' + #13#10 +
-    '║     ██      ██   ██  ██████   ██████  ║' + #13#10 +
-    '║                                       ║' + #13#10 +
-    '║       BLUETOOTH BATTERY WIDGET        ║' + #13#10 +
-    '╚═══════════════════════════════════════╝';
-  AsciiArt.Font.Name := 'Consolas';
-  AsciiArt.Font.Size := 8;
-  AsciiArt.Font.Color := clGreen;
-  AsciiArt.Font.Style := [fsBold];
-  AsciiArt.Left := 20;
-  AsciiArt.Top := 5;
-  AsciiArt.AutoSize := True;
-  
-  // Feature list with retro styling
-  FeatureList := TNewStaticText.Create(RetroPage);
-  FeatureList.Parent := RetroPage.Surface;
-  FeatureList.Caption := 
-    '┌─────────────────────────────────────────┐' + #13#10 +
-    '│  > Real-time battery monitoring         │' + #13#10 +
-    '│  > 4 themes: Retro/Pixel/Neon/Moss      │' + #13#10 +
-    '│  > Network speed + ping display         │' + #13#10 +
-    '│  > Battery drain rate tracking          │' + #13#10 +
-    '│  > Screen edge snapping                 │' + #13#10 +
-    '│  > Stays on top of other windows        │' + #13#10 +
-    '└─────────────────────────────────────────┘';
-  FeatureList.Font.Name := 'Consolas';
-  FeatureList.Font.Size := 9;
-  FeatureList.Font.Color := clAqua;
-  FeatureList.Left := 20;
-  FeatureList.Top := 145;
-  FeatureList.AutoSize := True;
-  
-  // Made by credit
-  StatusLbl := TNewStaticText.Create(RetroPage);
-  StatusLbl.Parent := RetroPage.Surface;
-  StatusLbl.Caption := 'Made by Shoam';
-  StatusLbl.Font.Name := 'Consolas';
-  StatusLbl.Font.Size := 10;
-  StatusLbl.Font.Color := clYellow;
-  StatusLbl.Font.Style := [fsBold];
-  StatusLbl.Left := 20;
-  StatusLbl.Top := 290;
-  StatusLbl.AutoSize := True;
-end;
-
-procedure CurPageChanged(CurPageID: Integer);
-begin
-  // Update status messages based on page
-  if CurPageID = wpSelectDir then
-  begin
-    WizardForm.DirEdit.Font.Name := 'Consolas';
-  end;
-  
-  if CurPageID = wpInstalling then
-  begin
-    WizardForm.StatusLabel.Font.Name := 'Consolas';
-    WizardForm.StatusLabel.Font.Color := clLime;
-  end;
-  
-  if CurPageID = wpFinished then
-  begin
-    WizardForm.FinishedLabel.Font.Name := 'Consolas';
-  end;
-end;
-
 function InitializeSetup(): Boolean;
 begin
   Result := True;
