@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Window
+    x:Class="BluetoothWidget.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:BluetoothWidget"
+    xmlns:controls="using:BluetoothWidget.Controls"
+    xmlns:vm="using:BluetoothWidget.ViewModels"
+    Title="Bluetooth Devices">
+
+    <Grid x:Name="RootGrid" RequestedTheme="Dark">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Custom Title Bar -->
+        <Grid x:Name="AppTitleBar" Grid.Row="0" Padding="16,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                <TextBlock Text="🎧" FontSize="18"/>
+                <TextBlock Text="Bluetooth Devices" 
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           VerticalAlignment="Center"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                <TextBlock x:Name="DeviceCountText"
+                           Text="3 devices"
+                           FontSize="12"
+                           Foreground="#888888"
+                           VerticalAlignment="Center"/>
+                <Button x:Name="RefreshButton"
+                        Click="RefreshButton_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="8"
+                        ToolTipService.ToolTip="Refresh devices"
+                        VerticalAlignment="Center">
+                    <FontIcon Glyph="&#xE72C;" FontSize="14" Foreground="#AAAAAA"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <!-- Main Content -->
+        <Grid Grid.Row="1" Padding="16,8,16,16">
+            <!-- Loading Indicator -->
+            <ProgressRing x:Name="LoadingRing" 
+                          IsActive="False" 
+                          Width="48" Height="48"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"/>
+
+            <!-- Empty State -->
+            <StackPanel x:Name="EmptyState" 
+                        Visibility="Collapsed"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="12">
+                <TextBlock Text="📡" FontSize="48" HorizontalAlignment="Center"/>
+                <TextBlock Text="No Bluetooth devices found"
+                           FontSize="16"
+                           Foreground="#888888"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="Pair a device in Windows Settings"
+                           FontSize="12"
+                           Foreground="#666666"
+                           HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Devices Grid -->
+            <GridView x:Name="DevicesGrid"
+                      SelectionMode="None"
+                      IsItemClickEnabled="False">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" 
+                                       ItemWidth="220"
+                                       ItemHeight="200"
+                                       MaximumRowsOrColumns="4"/>
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
+                <GridView.ItemContainerStyle>
+                    <Style TargetType="GridViewItem">
+                        <Setter Property="Margin" Value="6"/>
+                        <Setter Property="Padding" Value="0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </GridView.ItemContainerStyle>
+                <GridView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:BluetoothDeviceViewModel">
+                        <!-- Dark Glass Card -->
+                        <Border CornerRadius="20"
+                                Padding="16"
+                                PointerEntered="Card_PointerEntered"
+                                PointerExited="Card_PointerExited"
+                                Translation="0,0,8">
+                            <Border.Background>
+                                <AcrylicBrush TintColor="#1A1A2E"
+                                              TintOpacity="0.85"
+                                              FallbackColor="#1A1A2E"/>
+                            </Border.Background>
+                            <Border.Shadow>
+                                <ThemeShadow/>
+                            </Border.Shadow>
+                            
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Battery Ring with Glow -->
+                                <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                    <controls:GlowingBatteryRing 
+                                        Value="{x:Bind BatteryLevel, Mode=OneWay}"
+                                        TimeRemaining="{x:Bind TimeRemainingText, Mode=OneWay}"
+                                        Width="90" Height="90"/>
+                                </Grid>
+
+                                <!-- Device Info -->
+                                <StackPanel Grid.Row="1" Spacing="6" Margin="0,12,0,0">
+                                    <TextBlock Text="{x:Bind Name}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="White"
+                                               TextTrimming="CharacterEllipsis"
+                                               HorizontalAlignment="Center"
+                                               MaxLines="1"/>
+                                    
+                                    <StackPanel Orientation="Horizontal" 
+                                                HorizontalAlignment="Center"
+                                                Spacing="6">
+                                        <Ellipse Width="8" Height="8"
+                                                 Fill="{x:Bind ConnectionStatusBrush, Mode=OneWay}"/>
+                                        <TextBlock Text="{x:Bind ConnectionStatusText, Mode=OneWay}"
+                                                   FontSize="11"
+                                                   Foreground="#888888"/>
+                                    </StackPanel>
+
+                                    <!-- Time Tracking Info -->
+                                    <TextBlock Text="{x:Bind TrackingInfoText, Mode=OneWay}"
+                                               FontSize="10"
+                                               Foreground="#64B5F6"
+                                               HorizontalAlignment="Center"
+                                               Visibility="{x:Bind HasTrackingInfo, Mode=OneWay}"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+        </Grid>
+    </Grid>
+</Window>

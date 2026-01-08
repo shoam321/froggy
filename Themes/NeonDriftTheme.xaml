@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- NEONDRIFT - SynthWave Sunset Theme -->
+    <!-- Warm pink/magenta horizon meeting cool cyan sky -->
+    <!-- Electric purple accents with calm deep purple background -->
+    
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00FFEF"/>          <!-- Cyan glow -->
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FF79C6"/>        <!-- Hot pink -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#BD93F9"/>           <!-- Electric purple -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#1A1025"/>       <!-- Deep purple-black -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#251832"/>          <!-- Slightly lighter purple -->
+    <SolidColorBrush x:Key="CardBrush" Color="#2D1F3D"/>             <!-- Card purple -->
+    <SolidColorBrush x:Key="TextBrush" Color="#E8E0F0"/>             <!-- Soft lavender-white -->
+    <SolidColorBrush x:Key="SubTextBrush" Color="#8B7B9B"/>          <!-- Muted purple text -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#50FA7B"/>          <!-- Neon green -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFB86C"/>          <!-- Warm orange -->
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF5555"/>           <!-- Coral red -->
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#150D1C"/>         <!-- Darkest purple -->
+    <SolidColorBrush x:Key="TitleTextBrush" Color="#FF79C6"/>        <!-- Hot pink title -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#BD93F9"/>           <!-- Purple border -->
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#FF79C6"/>      <!-- Pink highlight -->
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="#44475A"/>       <!-- Muted dark -->
+    <SolidColorBrush x:Key="ProgressBlockBrush" Color="#FF2D95"/>    <!-- Neon magenta -->
+    <SolidColorBrush x:Key="ProgressBarBgBrush" Color="#1A1025"/>    <!-- Deep purple bg -->
+    
+    <!-- Theme identifier -->
+    <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">NEONDRIFT</system:String>
+    <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+    
+</ResourceDictionary>

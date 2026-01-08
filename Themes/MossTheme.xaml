@@ -1,0 +1,31 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- MOSS TERMINAL - Forest/Nature Dark Theme -->
+    <!-- Cozy cabin terminal deep in a misty forest -->
+    <!-- Earthy greens, bark browns, soft amber firelight -->
+    
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#7EC699"/>          <!-- Fresh leaf green -->
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#E5C07B"/>        <!-- Amber/honey -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#61AFEF"/>           <!-- Sky blue -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#1C2118"/>       <!-- Deep forest floor -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#252D21"/>          <!-- Moss green-black -->
+    <SolidColorBrush x:Key="CardBrush" Color="#2E382A"/>             <!-- Forest card -->
+    <SolidColorBrush x:Key="TextBrush" Color="#D4CFC4"/>             <!-- Warm parchment -->
+    <SolidColorBrush x:Key="SubTextBrush" Color="#8B9D7C"/>          <!-- Sage green text -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#98C379"/>          <!-- Bright moss -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#D19A66"/>          <!-- Autumn orange -->
+    <SolidColorBrush x:Key="DangerBrush" Color="#E06C75"/>           <!-- Soft red -->
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#161A13"/>         <!-- Deep shadow -->
+    <SolidColorBrush x:Key="TitleTextBrush" Color="#7EC699"/>        <!-- Leaf green title -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#4A5D3E"/>           <!-- Bark brown-green -->
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#7EC699"/>      <!-- Leaf highlight -->
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="#232B1F"/>       <!-- Deep moss shadow -->
+    <SolidColorBrush x:Key="ProgressBlockBrush" Color="#98C379"/>    <!-- Bright moss -->
+    <SolidColorBrush x:Key="ProgressBarBgBrush" Color="#1C2118"/>    <!-- Forest bg -->
+    
+    <!-- Theme identifier -->
+    <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">MOSS</system:String>
+    <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+    
+</ResourceDictionary>

@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- PIXEL ART Dark Mode Theme - Retro CRT/Terminal Style -->
+    <!-- Dark background with glowing green/amber accents -->
+    
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00AA00"/>          <!-- Terminal green -->
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#FFAA00"/>        <!-- Amber/Orange -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#00FFAA"/>           <!-- Cyan accent -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>       <!-- Near black -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A1A1A"/>          <!-- Dark gray surface -->
+    <SolidColorBrush x:Key="CardBrush" Color="#252525"/>             <!-- Slightly lighter cards -->
+    <SolidColorBrush x:Key="TextBrush" Color="#00FF00"/>             <!-- Bright green text -->
+    <SolidColorBrush x:Key="SubTextBrush" Color="#00AA00"/>          <!-- Dimmer green subtext -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#00FF00"/>          <!-- Bright green -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFAA00"/>          <!-- Amber warning -->
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF3333"/>           <!-- Red danger -->
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#002200"/>         <!-- Dark green title bar -->
+    <SolidColorBrush x:Key="TitleTextBrush" Color="#00FF00"/>        <!-- Green title text -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#00AA00"/>           <!-- Green border -->
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#00FF00"/>      <!-- Bright green highlight -->
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="#004400"/>       <!-- Dark green shadow -->
+    <SolidColorBrush x:Key="ProgressBlockBrush" Color="#00FF00"/>    <!-- Green progress blocks -->
+    <SolidColorBrush x:Key="ProgressBarBgBrush" Color="#001100"/>    <!-- Very dark green bg -->
+    
+    <!-- Theme identifier -->
+    <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">PIXEL</system:String>
+    <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+    
+</ResourceDictionary>

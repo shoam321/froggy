@@ -1,0 +1,12 @@
+# Build outputs
+bin/
+obj/
+publish/
+
+# IDE
+.vs/
+.vscode/
+*.user
+
+# Installer output (we upload these to releases manually)
+Installer/Output/

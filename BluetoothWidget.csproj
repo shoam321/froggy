@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+    <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ApplicationIcon Condition="Exists('Assets\logo.ico')">Assets\logo.ico</ApplicationIcon>
+    <AssemblyName>Froggy</AssemblyName>
+    <Product>Froggy - Bluetooth Widget</Product>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
+    <PackageReference Include="System.Management" Version="8.0.0" />
+  </ItemGroup>
+
+  <!-- Include Assets if they exist -->
+  <ItemGroup>
+    <Resource Include="Assets\logo.jpg" Condition="Exists('Assets\logo.jpg')" />
+    <Resource Include="Assets\logo.png" Condition="Exists('Assets\logo.png')" />
+    <Resource Include="Assets\logo.ico" Condition="Exists('Assets\logo.ico')" />
+    <Content Include="Assets\animation.mp4" Condition="Exists('Assets\animation.mp4')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Exclude WinUI folder from WPF build -->
+  <ItemGroup>
+    <Compile Remove="WinUI\**" />
+    <Page Remove="WinUI\**" />
+    <None Remove="WinUI\**" />
+    <Content Remove="WinUI\**" />
+  </ItemGroup>
+
+</Project>

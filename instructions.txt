@@ -1,0 +1,36 @@
+instructions for Co pilot
+System Rules & Development Guidelines
+"For all code generation and architectural advice regarding this project, you must adhere to these rules at all times:"
+
+1. UI/UX Principles (Fluent Design)
+Design Tokens Only: Never use hardcoded colors (e.g., #FFFFFF). Always use Windows 11 Theme Resources (e.g., {ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}).
+
+Materials & Depth: Every window must use MicaAlt. Every interactive element must have a defined Elevation (Shadow) and CornerRadius (default to 8px or 12px for cards).
+
+Motion First: Do not provide static UI code. Include VisualStateManager states for PointerOver, Pressed, and Focused for every custom control.
+
+2. Architecture & Pattern (Clean MVVM)
+Strict MVVM: No logic in Code-Behind (xaml.cs). All data manipulation and command handling must be in the ViewModel.
+
+Modern C#: Use Source Generators from the Community Toolkit (attributes like [ObservableProperty], [RelayCommand], and [ObservableObject]).
+
+Asynchronous Integrity: Every hardware-related call (Bluetooth/GATT) must be async. Never use .Result or .Wait(); use await to prevent UI thread freezing.
+
+3. Bluetooth & Hardware Management
+Battery Specification: Always target GATT Service UUID 0x180F and Characteristic UUID 0x2A19.
+
+Notification Over Polling: Always attempt to subscribe to Characteristic.ValueChanged first. Only fallback to manual polling if the device doesn't support notifications.
+
+Power Efficiency: When the app is minimized or the window is hidden, hardware scanning and GATT listeners must be throttled or paused.
+
+4. Error & State Handling
+Defensive Coding: Every Bluetooth connection must be wrapped in try-catch blocks specifically handling DeviceUnreachable and AccessDenied exceptions.
+
+User Feedback: For every background task, include a bool IsLoading property in the ViewModel to drive a ProgressRing or "shimmer" effect in the UI.
+
+Empty States: Never show an empty screen. Provide a 'No Devices Found' view with a 'Scan' button.
+
+5. Code Documentation
+Self-Documenting Code: Use descriptive variable names (e.g., batteryLevelPercentage instead of bat).
+
+XML Comments: Provide <summary> tags for all public methods explaining the 'why' behind hardware calls.
