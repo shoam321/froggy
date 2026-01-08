@@ -11,7 +11,7 @@
 ; ═══════════════════════════════════════════════════════════════════════════════
 
 #define MyAppName "Froggy"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.0"
 #define MyAppPublisher "Froggy"
 #define MyAppURL "https://github.com/froggy"
 #define MyAppExeName "Froggy.exe"
