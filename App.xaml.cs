@@ -9,7 +9,7 @@ namespace BluetoothWidget
     public partial class App : Application
     {
         // Current version - UPDATE THIS when releasing new versions
-        public const string CurrentVersion = "1.1.0";
+        public const string CurrentVersion = "1.2.0";
         
         // URL to your update XML file (hosted on GitHub)
         private const string UpdateUrl = "https://raw.githubusercontent.com/shoam321/froggy/main/update.xml";

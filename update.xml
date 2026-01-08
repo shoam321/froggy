@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <item>
-    <version>1.1.0</version>
+    <version>1.2.0</version>
     <url>https://github.com/shoam321/froggy/releases/download/v1.1.0/Froggy_Setup_1.1.0.exe</url>
     <changelog>https://github.com/shoam321/froggy/releases/tag/v1.1.0</changelog>
     <mandatory>false</mandatory>

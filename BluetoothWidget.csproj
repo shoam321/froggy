@@ -11,7 +11,7 @@
     <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <WindowsSdkPackageVersion>10.0.19041.38</WindowsSdkPackageVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <ApplicationIcon Condition="Exists('Assets\logo.ico')">Assets\logo.ico</ApplicationIcon>
+    <ApplicationIcon>Assets\froggy.ico</ApplicationIcon>
     <AssemblyName>Froggy</AssemblyName>
     <Product>Froggy - Bluetooth Widget</Product>
   </PropertyGroup>
@@ -26,7 +26,10 @@
   <ItemGroup>
     <Resource Include="Assets\logo.jpg" Condition="Exists('Assets\logo.jpg')" />
     <Resource Include="Assets\logo.png" Condition="Exists('Assets\logo.png')" />
-    <Resource Include="Assets\logo.ico" Condition="Exists('Assets\logo.ico')" />
+    <Resource Include="Assets\froggy.ico" />
+    <Content Include="Assets\froggy.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Assets\animation.mp4" Condition="Exists('Assets\animation.mp4')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

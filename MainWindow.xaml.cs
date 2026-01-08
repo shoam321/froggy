@@ -12,6 +12,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Microsoft.VisualBasic;
+using WinForms = System.Windows.Forms; // Alias for laptop battery
 
 namespace BluetoothWidget
 {
@@ -58,6 +59,10 @@ namespace BluetoothWidget
         private bool _isFirstScan = true;
         private bool _isLoading = false;
         private bool _hasFoundDevices = false; // Once true, never show loading animation again
+        private Border? _laptopBatteryCard = null; // Card for laptop battery
+        
+        // System tray icon
+        private WinForms.NotifyIcon? _trayIcon;
         
         // Text size settings
         private TextSizeLevel _currentTextSize = TextSizeLevel.Medium;
@@ -76,6 +81,9 @@ namespace BluetoothWidget
             
             // Subscribe to theme changes
             ThemeManager.ThemeChanged += OnThemeChanged;
+            
+            // Initialize system tray icon
+            InitializeTrayIcon();
             
             // Apply theme-specific styling
             ApplyThemeSpecificStyles();
@@ -900,6 +908,9 @@ Made with love for gamers who need to know when their headset is about to die mi
 
                 // Stop animation immediately when we have results
                 StopLoadingAnimation();
+                
+                // Always update laptop battery first
+                UpdateLaptopBatteryCard();
 
                 if (connectedDevices.Any())
                 {
@@ -948,6 +959,9 @@ Made with love for gamers who need to know when their headset is about to die mi
                     DeviceListPanel.Children.Clear();
                     _deviceCards.Clear();
                     
+                    // Still show laptop battery even if no Bluetooth devices
+                    UpdateLaptopBatteryCard();
+                    
                     LoadingPanel.Visibility = Visibility.Visible;
                     LoadingText.Visibility = Visibility.Visible;
                     SpinnerArc.Visibility = Visibility.Collapsed;
@@ -962,6 +976,172 @@ Made with love for gamers who need to know when their headset is about to die mi
                 LoadingText.Visibility = Visibility.Visible;
                 SpinnerArc.Visibility = Visibility.Collapsed;
                 LoadingText.Text = $"Error accessing Bluetooth:\n{ex.Message}\n\nTry:\n- Enable Bluetooth in Settings\n- Run as Administrator";
+            }
+        }
+
+        /// <summary>
+        /// Gets laptop battery info and creates/updates the laptop battery card.
+        /// </summary>
+        private void UpdateLaptopBatteryCard()
+        {
+            try
+            {
+                var powerStatus = WinForms.SystemInformation.PowerStatus;
+                
+                // Only show if laptop has a battery
+                if (powerStatus.BatteryChargeStatus == WinForms.BatteryChargeStatus.NoSystemBattery)
+                    return;
+                
+                int batteryPercent = (int)(powerStatus.BatteryLifePercent * 100);
+                bool isCharging = powerStatus.PowerLineStatus == WinForms.PowerLineStatus.Online;
+                string timeRemaining = "";
+                
+                if (powerStatus.BatteryLifeRemaining > 0 && !isCharging)
+                {
+                    var remaining = TimeSpan.FromSeconds(powerStatus.BatteryLifeRemaining);
+                    timeRemaining = $"~{remaining.Hours}h {remaining.Minutes}m left";
+                }
+                else if (isCharging)
+                {
+                    timeRemaining = "Charging";
+                }
+                
+                if (_laptopBatteryCard == null)
+                {
+                    _laptopBatteryCard = CreateLaptopBatteryCard(batteryPercent, isCharging, timeRemaining);
+                    DeviceListPanel.Children.Insert(0, _laptopBatteryCard); // Add at top
+                }
+                else
+                {
+                    UpdateLaptopBatteryCardContent(_laptopBatteryCard, batteryPercent, isCharging, timeRemaining);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting laptop battery: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Creates a card displaying the laptop's battery status.
+        /// </summary>
+        private Border CreateLaptopBatteryCard(int batteryPercent, bool isCharging, string timeRemaining)
+        {
+            var card = new Border
+            {
+                Style = (Style)FindResource("DeviceItemStyle"),
+                Tag = "LaptopBattery"
+            };
+
+            var grid = new Grid();
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+            // Left side - device info (matching Bluetooth device card style)
+            var infoPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
+            
+            var nameText = new TextBlock
+            {
+                Text = "Laptop",
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("PrimaryBrush")
+            };
+            infoPanel.Children.Add(nameText);
+
+            var statusText = new TextBlock
+            {
+                Text = isCharging ? "● CHARGING" : "● ON BATTERY",
+                FontSize = 10,
+                Foreground = isCharging ? Brushes.Orange : Brushes.LimeGreen,
+                Margin = new Thickness(0, 4, 0, 0)
+            };
+            infoPanel.Children.Add(statusText);
+
+            var timeText = new TextBlock
+            {
+                Text = timeRemaining,
+                FontSize = 14,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("SubTextBrush"),
+                Margin = new Thickness(0, 6, 0, 0),
+                Visibility = string.IsNullOrEmpty(timeRemaining) ? Visibility.Collapsed : Visibility.Visible
+            };
+            infoPanel.Children.Add(timeText);
+
+            Grid.SetColumn(infoPanel, 0);
+            grid.Children.Add(infoPanel);
+
+            // Right side - battery percentage (matching Bluetooth device card style)
+            var batteryPanel = new StackPanel 
+            { 
+                Orientation = System.Windows.Controls.Orientation.Horizontal,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = System.Windows.HorizontalAlignment.Right
+            };
+
+            var batteryIcon = new TextBlock
+            {
+                Text = isCharging ? "🔌" : "💻",
+                FontSize = 24,
+                Margin = new Thickness(0, 0, 8, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            batteryPanel.Children.Add(batteryIcon);
+
+            var percentText = new TextBlock
+            {
+                Text = $"{batteryPercent}%",
+                FontSize = 18,
+                FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Consolas"),
+                Foreground = GetBatteryColor(batteryPercent),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            batteryPanel.Children.Add(percentText);
+
+            Grid.SetColumn(batteryPanel, 1);
+            grid.Children.Add(batteryPanel);
+
+            card.Child = grid;
+            return card;
+        }
+
+        /// <summary>
+        /// Updates an existing laptop battery card with new values.
+        /// </summary>
+        private void UpdateLaptopBatteryCardContent(Border card, int batteryPercent, bool isCharging, string timeRemaining)
+        {
+            if (card.Child is Grid grid)
+            {
+                // Update status
+                if (grid.Children[0] is StackPanel infoPanel)
+                {
+                    if (infoPanel.Children[1] is TextBlock statusText)
+                    {
+                        statusText.Text = isCharging ? "● CHARGING" : "● ON BATTERY";
+                        statusText.Foreground = isCharging ? Brushes.Orange : Brushes.LimeGreen;
+                    }
+                    
+                    // Update time remaining
+                    if (infoPanel.Children.Count > 2 && infoPanel.Children[2] is TextBlock timeText)
+                    {
+                        timeText.Text = timeRemaining;
+                        timeText.Visibility = string.IsNullOrEmpty(timeRemaining) ? Visibility.Collapsed : Visibility.Visible;
+                    }
+                }
+
+                // Update battery display
+                if (grid.Children[1] is StackPanel batteryPanel)
+                {
+                    if (batteryPanel.Children[0] is TextBlock icon)
+                        icon.Text = isCharging ? "🔌" : "💻";
+                    if (batteryPanel.Children[1] is TextBlock percent)
+                    {
+                        percent.Text = $"{batteryPercent}%";
+                        percent.Foreground = GetBatteryColor(batteryPercent);
+                    }
+                }
             }
         }
 
@@ -1310,8 +1490,93 @@ Made with love for gamers who need to know when their headset is about to die mi
         protected override void OnClosed(EventArgs e)
         {
             refreshTimer?.Stop();
+            
+            // Dispose tray icon
+            if (_trayIcon != null)
+            {
+                _trayIcon.Visible = false;
+                _trayIcon.Dispose();
+                _trayIcon = null;
+            }
+            
             base.OnClosed(e);
         }
+
+        #region System Tray Icon
+
+        /// <summary>
+        /// Initializes the system tray icon with context menu.
+        /// </summary>
+        private void InitializeTrayIcon()
+        {
+            _trayIcon = new WinForms.NotifyIcon();
+            _trayIcon.Text = "Froggy - Bluetooth Widget";
+            
+            // Create icon from embedded resource or use a default
+            try
+            {
+                var iconPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "froggy.ico");
+                if (System.IO.File.Exists(iconPath))
+                {
+                    _trayIcon.Icon = new System.Drawing.Icon(iconPath);
+                }
+                else
+                {
+                    // Use default application icon
+                    _trayIcon.Icon = System.Drawing.Icon.ExtractAssociatedIcon(System.Reflection.Assembly.GetExecutingAssembly().Location);
+                }
+            }
+            catch
+            {
+                // Fallback to default
+                _trayIcon.Icon = System.Drawing.SystemIcons.Application;
+            }
+            
+            // Context menu
+            var contextMenu = new WinForms.ContextMenuStrip();
+            
+            var showItem = new WinForms.ToolStripMenuItem("Show Froggy");
+            showItem.Click += (s, e) => ShowFromTray();
+            contextMenu.Items.Add(showItem);
+            
+            contextMenu.Items.Add(new WinForms.ToolStripSeparator());
+            
+            var exitItem = new WinForms.ToolStripMenuItem("Exit");
+            exitItem.Click += (s, e) => Application.Current.Shutdown();
+            contextMenu.Items.Add(exitItem);
+            
+            _trayIcon.ContextMenuStrip = contextMenu;
+            
+            // Double-click to show
+            _trayIcon.DoubleClick += (s, e) => ShowFromTray();
+            
+            _trayIcon.Visible = true;
+        }
+
+        /// <summary>
+        /// Shows the window from the system tray.
+        /// </summary>
+        private void ShowFromTray()
+        {
+            this.Show();
+            this.WindowState = WindowState.Normal;
+            this.Activate();
+        }
+
+        /// <summary>
+        /// Override to minimize to tray instead of closing.
+        /// </summary>
+        protected override void OnStateChanged(EventArgs e)
+        {
+            if (WindowState == WindowState.Minimized)
+            {
+                this.Hide();
+                _trayIcon?.ShowBalloonTip(1000, "Froggy", "Minimized to tray. Double-click to restore.", WinForms.ToolTipIcon.Info);
+            }
+            base.OnStateChanged(e);
+        }
+
+        #endregion
     }
 }
 
