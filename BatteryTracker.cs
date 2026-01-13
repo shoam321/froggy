@@ -27,6 +27,23 @@ namespace BluetoothWidget
         public int? LastFullChargeLevel { get; set; }
     }
 
+    /// <summary>
+    /// Tracks battery readings for Bluetooth devices and computes simple drain statistics.
+    ///
+    /// Notes on recent fixes (recorded here for maintainers):
+    /// - Recording interval was lowered from 5 minutes to 1 minute so short/fast drains
+    ///   reported by some devices are not missed.
+    /// - Drain-rate calculation threshold was lowered from 0.1 hours (~6 minutes)
+    ///   to ~0.016 hours (~1 minute) to allow estimates from shorter windows.
+    /// - Display threshold for drain-rate was lowered from 0.1 %/hr to 0.01 %/hr
+    ///   so small but measurable drains are shown to the user.
+    /// - Temporary debug logging was added to `RecordBattery` and `GetSummaryText` to
+    ///   help diagnose why rates were previously not appearing; this logs to the
+    ///   application log at %LOCALAPPDATA%\BluetoothWidget\log.txt via `App.LogToFile`.
+    ///
+    /// These changes were intentionally conservative but more sensitive than the
+    /// original implementation. If noise is observed in production, consider tuning
+    /// the thresholds back toward the original values.
     public static class BatteryTracker
     {
         private static readonly string DataDir = Path.Combine(
@@ -107,10 +124,16 @@ namespace BluetoothWidget
                     var now = DateTime.Now;
                     var lastReading = history.Readings.LastOrDefault();
 
-                    // Only record if battery changed or first reading or at least 5 min passed
+                    // Only record if battery changed or first reading or at least 1 min passed
                     bool shouldRecord = lastReading == null ||
                                        lastReading.BatteryLevel != batteryLevel ||
-                                       (now - lastReading.Timestamp).TotalMinutes >= 5;
+                                       (now - lastReading.Timestamp).TotalMinutes >= 1;
+
+                    // Debug: record a diagnostic line describing the incoming reading and
+                    // whether it will be persisted. This helps diagnose devices that
+                    // report battery but where the drain-rate did not appear in the UI.
+                    // Remove or reduce verbosity once thresholds are tuned.
+                    App.LogToFile("BatteryTracker.RecordBattery", $"[{now}] {deviceName} ({deviceId}): Current={batteryLevel}, Last={(lastReading != null ? lastReading.BatteryLevel.ToString() : "null")} at {(lastReading != null ? lastReading.Timestamp.ToString() : "null")}, ShouldRecord={shouldRecord}");
 
                     if (shouldRecord)
                     {
@@ -233,7 +256,7 @@ namespace BluetoothWidget
                         stats.LastFullChargeLevel = first.BatteryLevel;
                         stats.TimeSinceLastCharge = now - first.Timestamp;
 
-                        if (drained > 0 && elapsed.TotalHours > 0.1) // At least 6 minutes of data
+                        if (drained > 0 && elapsed.TotalHours > 0.016) // At least ~1 minute of data
                         {
                             stats.DrainRatePerHour = drained / elapsed.TotalHours;
                             
@@ -264,7 +287,12 @@ namespace BluetoothWidget
                 var stats = GetStats(deviceId);
                 var parts = new List<string>();
 
-                if (stats.DrainRatePerHour.HasValue && stats.DrainRatePerHour.Value > 0.1)
+                // Debug: log summary inputs so maintainers can see the computed stats and
+                // how many readings exist for a device. This helps determine whether
+                // lack of drain info is due to insufficient data or low measured rate.
+                App.LogToFile("BatteryTracker.GetSummaryText", $"Device={deviceId}, DrainRate={stats.DrainRatePerHour}, EstTime={stats.EstimatedTimeRemaining}, Readings={( _history.TryGetValue(deviceId, out var h) ? h.Readings.Count : 0 )}");
+
+                if (stats.DrainRatePerHour.HasValue && stats.DrainRatePerHour.Value > 0.01)
                 {
                     double perHour = stats.DrainRatePerHour.Value;
                     double per10Min = perHour / 6.0;

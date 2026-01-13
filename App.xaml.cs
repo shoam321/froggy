@@ -9,7 +9,7 @@ namespace BluetoothWidget
     public partial class App : Application
     {
         // Current version - UPDATE THIS when releasing new versions
-        public const string CurrentVersion = "1.2.0";
+        public const string CurrentVersion = "1.2.1";
         
         // URL to your update XML file (hosted on GitHub)
         private const string UpdateUrl = "https://raw.githubusercontent.com/shoam321/froggy/main/update.xml";
@@ -61,6 +61,29 @@ namespace BluetoothWidget
                 var path = Path.Combine(dir, "log.txt");
                 File.AppendAllText(path,
                     $"{DateTime.Now:O} [{category}] {(ex?.ToString() ?? "(no exception)")}{Environment.NewLine}");
+            }
+            catch
+            {
+                // ignore
+            }
+        }
+
+        // Overload for logging string messages
+        //
+        // This overload was added to support diagnostic logging from non-exception
+        // code paths (for example, to record battery reading metadata). Logs are
+        // written to %LOCALAPPDATA%\BluetoothWidget\log.txt. Keep messages brief
+        // to avoid large log files; consider removing or gating verbose logs in
+        // production builds.
+        internal static void LogToFile(string category, string message)
+        {
+            try
+            {
+                var dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BluetoothWidget");
+                Directory.CreateDirectory(dir);
+                var path = Path.Combine(dir, "log.txt");
+                File.AppendAllText(path,
+                    $"{DateTime.Now:O} [{category}] {message}{Environment.NewLine}");
             }
             catch
             {
