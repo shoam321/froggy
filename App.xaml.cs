@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Windows;
 using System.Windows.Threading;
+using System.Threading.Tasks;
 using AutoUpdaterDotNET;
 
 namespace BluetoothWidget
@@ -37,6 +38,23 @@ namespace BluetoothWidget
             }
             
             base.OnStartup(e);
+
+            // Start BLE advertisement scan in background on app startup (no button required)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    var results = await WindowsBluetoothHelper.ScanAdvertisementsAsync(TimeSpan.FromSeconds(8), msg => LogToFile("BLEScan", new Exception(msg)));
+                    foreach (var r in results)
+                    {
+                        LogToFile("BLEScan", new Exception($"{r.BluetoothAddress:X12} {r.LocalName} RSSI={r.Rssi} Services={r.ServiceUuids.Count} Mfg={r.ManufacturerData.Count}"));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogToFile("BLEScan", ex);
+                }
+            });
         }
 
         private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)

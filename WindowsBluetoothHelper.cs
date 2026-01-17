@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
+using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using Windows.Devices.Bluetooth.Rfcomm;
 using Windows.Devices.Enumeration;
@@ -1031,6 +1032,122 @@ namespace BluetoothWidget
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Scan BLE advertisements for a short duration and return discovered identifiers.
+        /// Useful to find device addresses, local names, RSSI, manufacturer data and service UUIDs.
+        /// </summary>
+        public class AdvertisementResult
+        {
+            public ulong BluetoothAddress { get; set; }
+            public string LocalName { get; set; } = string.Empty;
+            public short Rssi { get; set; }
+            public List<byte[]> ManufacturerData { get; } = new List<byte[]>();
+            public List<Guid> ServiceUuids { get; } = new List<Guid>();
+        }
+
+        public static Task<List<AdvertisementResult>> ScanAdvertisementsAsync(TimeSpan timeout, Action<string>? logger = null)
+        {
+            var tcs = new TaskCompletionSource<List<AdvertisementResult>>();
+            var results = new List<AdvertisementResult>();
+
+            var watcher = new BluetoothLEAdvertisementWatcher
+            {
+                ScanningMode = BluetoothLEScanningMode.Active
+            };
+
+            watcher.Received += (s, e) =>
+            {
+                try
+                {
+                    var addr = e.BluetoothAddress;
+                    var rssi = e.RawSignalStrengthInDBm;
+                    var name = e.Advertisement.LocalName ?? string.Empty;
+
+                    // Avoid duplicates for same address (update if stronger RSSI observed)
+                    var existing = results.FirstOrDefault(x => x.BluetoothAddress == addr);
+                    if (existing != null)
+                    {
+                        if (rssi > existing.Rssi)
+                        {
+                            existing.Rssi = rssi;
+                            if (!string.IsNullOrWhiteSpace(name)) existing.LocalName = name;
+                        }
+                    }
+                    else
+                    {
+                        var ar = new AdvertisementResult
+                        {
+                            BluetoothAddress = addr,
+                            LocalName = name,
+                            Rssi = rssi
+                        };
+
+                        foreach (var md in e.Advertisement.ManufacturerData)
+                        {
+                            try
+                            {
+                                var buffer = md.Data;
+                                using var reader = DataReader.FromBuffer(buffer);
+                                var bytes = new byte[buffer.Length];
+                                reader.ReadBytes(bytes);
+                                ar.ManufacturerData.Add(bytes);
+                            }
+                            catch { }
+                        }
+
+                        foreach (var svc in e.Advertisement.ServiceUuids)
+                        {
+                            ar.ServiceUuids.Add(svc);
+                        }
+
+                        results.Add(ar);
+                        logger?.Invoke($"[BLE Adv] Addr={addr:X12} Name='{name}' RSSI={rssi} Services={ar.ServiceUuids.Count} Mfg={ar.ManufacturerData.Count}");
+                    }
+                }
+                catch { }
+            };
+
+            watcher.Stopped += (s, e) =>
+            {
+                try
+                {
+                    watcher.Received -= null!;
+                }
+                catch { }
+            };
+
+            try
+            {
+                watcher.Start();
+            }
+            catch (Exception ex)
+            {
+                App.LogToFile("BLE Watcher Start", ex);
+                tcs.TrySetResult(results);
+                return tcs.Task;
+            }
+
+            // Stop after timeout
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    await Task.Delay(timeout).ConfigureAwait(false);
+                }
+                catch { }
+
+                try
+                {
+                    watcher.Stop();
+                }
+                catch { }
+
+                tcs.TrySetResult(results);
+            });
+
+            return tcs.Task;
         }
     }
 }

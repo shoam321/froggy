@@ -19,9 +19,11 @@ if exist "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" (
     exit /b 1
 )
 
-echo Step 1: Building Release version...
+echo Step 1: Building Release version (self-contained, includes .NET runtime)...
 cd /d "%~dp0.."
-dotnet publish BluetoothWidget.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+REM Publish as self-contained so target machines without .NET can run the app.
+REM Note: this increases the size of the publish folder.
+dotnet publish BluetoothWidget.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
 
 if errorlevel 1 (
     echo Build failed!
