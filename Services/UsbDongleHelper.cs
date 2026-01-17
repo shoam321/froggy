@@ -22,6 +22,13 @@ namespace BluetoothWidget.Services
             "03F0", // HP (rebranded HyperX units)
         };
 
+        private static readonly Dictionary<string, string> VendorBrands = new(StringComparer.OrdinalIgnoreCase)
+        {
+            { "1E7D", "ROCCAT" },
+            { "0951", "HyperX" },
+            { "03F0", "HyperX" }
+        };
+
         public static List<UsbDongleDevice> GetUsbDongleDevices()
         {
             var results = new List<UsbDongleDevice>();
@@ -47,9 +54,7 @@ namespace BluetoothWidget.Services
                         if (!KnownVendorVids.Contains(vid))
                             continue;
 
-                        string? brand = vid.Equals("1E7D", StringComparison.OrdinalIgnoreCase) ? "ROCCAT" :
-                                         (vid.Equals("0951", StringComparison.OrdinalIgnoreCase) || vid.Equals("03F0", StringComparison.OrdinalIgnoreCase)) ? "HyperX" :
-                                         null;
+                        VendorBrands.TryGetValue(vid, out string? brand);
 
                         results.Add(new UsbDongleDevice
                         {
