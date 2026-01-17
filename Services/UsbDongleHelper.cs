@@ -58,7 +58,7 @@ namespace BluetoothWidget.Services
 
                         results.Add(new UsbDongleDevice
                         {
-                            Name = string.IsNullOrWhiteSpace(name) ? $"{brand ?? "USB Dongle"} (Dongle)" : name,
+                            Name = string.IsNullOrWhiteSpace(name) ? $"{brand ?? "USB"} Dongle" : name,
                             DeviceId = deviceId,
                             VendorId = vid,
                             ProductId = pid,

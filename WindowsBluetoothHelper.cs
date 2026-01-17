@@ -13,6 +13,7 @@ using Windows.Devices.Enumeration;
 using Windows.Networking.Sockets;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
+using BluetoothWidget.Services;
 
 namespace BluetoothWidget
 {
@@ -354,7 +355,7 @@ namespace BluetoothWidget
             // Integrate USB dongles (2.4GHz receivers) as devices so they appear in the UI
             try
             {
-                var usbDongles = BluetoothWidget.Services.UsbDongleHelper.GetUsbDongleDevices();
+                var usbDongles = UsbDongleHelper.GetUsbDongleDevices();
                 if (usbDongles != null && usbDongles.Count > 0)
                 {
                     try
