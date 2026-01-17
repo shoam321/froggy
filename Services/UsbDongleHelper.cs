@@ -48,9 +48,13 @@ namespace BluetoothWidget.Services
                         if (!KnownVendorVids.Contains(vid))
                             continue;
 
-                        string? brand = vid.Equals("1E7D", StringComparison.OrdinalIgnoreCase) ? "ROCCAT" :
-                                         (vid.Equals("0951", StringComparison.OrdinalIgnoreCase) || vid.Equals("03F0", StringComparison.OrdinalIgnoreCase)) ? "HyperX" :
-                                         null;
+                        string? brand = vid.ToUpperInvariant() switch
+                        {
+                            "1E7D" => "ROCCAT",
+                            "0951" => "HyperX",
+                            "03F0" => "HyperX",
+                            _ => null
+                        };
 
                         results.Add(new UsbDongleDevice
                         {
