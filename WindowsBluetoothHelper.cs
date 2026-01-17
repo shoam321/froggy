@@ -349,6 +349,51 @@ namespace BluetoothWidget
                 }
             }
 
+            // Integrate USB dongles (2.4GHz receivers) as devices so they appear in the UI
+            try
+            {
+                var usbDongles = BluetoothWidget.Services.UsbDongleHelper.GetUsbDongleDevices();
+                if (usbDongles != null && usbDongles.Count > 0)
+                {
+                    try
+                    {
+                        var diagDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BluetoothWidget");
+                        System.IO.Directory.CreateDirectory(diagDir);
+                        var diagPath = System.IO.Path.Combine(diagDir, "diag.txt");
+                        using var sw = new System.IO.StreamWriter(diagPath, append: true);
+                        sw.WriteLine($"[{DateTime.Now:O}] Detected USB dongles: {usbDongles.Count}");
+                        foreach (var d in usbDongles)
+                        {
+                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand}");
+                        }
+                    }
+                    catch { }
+
+                    foreach (var d in usbDongles)
+                    {
+                        // Check if already exists by Id (avoid duplicates)
+                        if (merged.Values.Any(r => string.Equals(r.Id, d.DeviceId, StringComparison.OrdinalIgnoreCase)))
+                            continue;
+
+                        var mapped = new WindowsBluetoothDevice
+                        {
+                            Name = d.Name,
+                            Id = d.DeviceId,
+                            IsConnected = true,
+                            BatteryLevel = null,
+                            IsBatteryFallback = false
+                        };
+
+                        // Add to merged dictionary by name
+                        if (!merged.ContainsKey(mapped.Name))
+                        {
+                            merged[mapped.Name] = mapped;
+                        }
+                    }
+                }
+            }
+            catch { }
+
             return merged.Values
                 .OrderByDescending(d => d.IsConnected)
                 .ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
