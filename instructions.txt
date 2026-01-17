@@ -34,3 +34,35 @@ Empty States: Never show an empty screen. Provide a 'No Devices Found' view with
 Self-Documenting Code: Use descriptive variable names (e.g., batteryLevelPercentage instead of bat).
 
 XML Comments: Provide <summary> tags for all public methods explaining the 'why' behind hardware calls.
+
+6. Edit Safety & Approval (MANDATORY)
+
+Edit Policy — No Unapproved Actions:
+- Never modify source files or apply patches without an explicit, written approval from the repository owner or designated reviewer.
+- For any requested change, present a concise plan (what will change and why), a small human-reviewable patch, and wait for confirmation before applying.
+
+Pre-Edit Checklist:
+- Create a readable patch or diff and include affected file paths and a short rationale.
+- Produce an automated backup copy for any file that will be changed (e.g., save to `backups/<timestamp>/path/to/file`).
+- Add or update a TODO item in the project's tracker before making changes.
+
+Interaction & Tool Use Rules:
+- When using automated tools (build, tests, patch application, package manager) explicitly notify the user of the exact commands to be run and wait for approval to execute them.
+- Do not run or publish builds, tests, or installers without explicit permission.
+- Do not launch application executables on the user's machine without permission.
+
+Rollback & Recovery:
+- If an unintended change is applied, immediately stop further actions and revert using one of the following, in order of preference:
+	1) Restore from the most recent backup copy in `backups/`.
+	2) If the repo uses git, run: `git restore --source=HEAD --staged --worktree -- .` (owner must confirm).
+	3) If a commit was pushed, prepare a revert patch and ask the owner for confirmation to apply it.
+
+Communications & Transparency:
+- Provide short, clear preambles before any batch of automated actions explaining the objective and expected outcome (one sentence).
+- Log every automated step into `edit_log.txt` with timestamp, files changed, who authorized it, and a short reason.
+
+Enforcement:
+- Any automated agent or collaborator that fails to follow these rules must be suspended from making automated changes until a human reviews and re-authorizes it.
+
+Appendix — Quick Authorization Template (copy and paste to approve a change):
+"I approve the following change: [short description]. Proceed to apply the patch to: [files]. Backup to: [backup path]."

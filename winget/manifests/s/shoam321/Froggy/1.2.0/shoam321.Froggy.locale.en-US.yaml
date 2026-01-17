@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.locale.1.6.0.schema.json
+PackageIdentifier: shoam321.Froggy
+PackageVersion: 1.2.0
+PackageLocale: en-US
+Publisher: Shoam
+PackageName: Froggy
+License: MIT
+ShortDescription: A beautiful desktop widget that displays battery levels for Bluetooth devices and laptop.
+Description: |-
+  Froggy is a sleek desktop widget that monitors battery levels for all your Bluetooth devices and laptop.
+  
+  Features:
+  - Real-time battery monitoring for Bluetooth devices
+  - Laptop battery status with charging indicator
+  - 4 beautiful themes: Retro, Pixel, Neon Drift, Moss
+  - System tray support - minimize and restore easily
+  - Screen edge snapping - dock to any corner
+  - Adjustable text sizes
+  - Battery drain statistics tracking
+Tags:
+  - bluetooth
+  - battery
+  - widget
+  - monitor
+  - utility
+  - desktop
+PackageUrl: https://github.com/shoam321/froggy
+ManifestType: defaultLocale
+ManifestVersion: 1.6.0

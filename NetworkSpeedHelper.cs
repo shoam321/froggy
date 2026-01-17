@@ -11,7 +11,7 @@ namespace BluetoothWidget
     /// Monitors network speed by tracking bytes transferred over time.
     /// Provides real-time download/upload speed measurements.
     /// </summary>
-    public class NetworkSpeedHelper
+    public class NetworkSpeedHelper : IDisposable
     {
         private long _lastBytesReceived;
         private long _lastBytesSent;
@@ -198,6 +198,14 @@ namespace BluetoothWidget
             var pingText = PingMs >= 0 ? $"{PingMs}ms" : "N/A";
 
             return $"↓{download} ↑{upload} | {pingText}";
+        }
+
+        /// <summary>
+        /// Disposes of resources used by the NetworkSpeedHelper.
+        /// </summary>
+        public void Dispose()
+        {
+            _httpClient?.Dispose();
         }
     }
 }

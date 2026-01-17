@@ -8,6 +8,9 @@ namespace BluetoothWidget
 {
     public partial class App : Application
     {
+        // Prevent showing the same fatal error dialog repeatedly (one per process run)
+        private static bool _hasShownFatalError = false;
+
         // Current version - UPDATE THIS when releasing new versions
         public const string CurrentVersion = "1.2.0";
         
@@ -39,11 +42,16 @@ namespace BluetoothWidget
         private static void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
         {
             LogToFile("DispatcherUnhandledException", e.Exception);
-            // Let the app crash naturally only if you prefer; for now keep it alive but show a message.
-            MessageBox.Show($"Unexpected error: {e.Exception.Message}\n\nDetails were written to %LOCALAPPDATA%\\BluetoothWidget\\log.txt",
-                "BluetoothWidget Error",
-                MessageBoxButton.OK,
-                MessageBoxImage.Error);
+            // Avoid flooding the user with repeated dialogs if many exceptions occur.
+            if (!_hasShownFatalError)
+            {
+                _hasShownFatalError = true;
+                MessageBox.Show($"Unexpected error: {e.Exception.Message}\n\nDetails were written to %LOCALAPPDATA%\\BluetoothWidget\\log.txt",
+                    "BluetoothWidget Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+            // Keep app alive but mark exception handled so WPF doesn't repeatedly route it.
             e.Handled = true;
         }
 
@@ -61,6 +69,15 @@ namespace BluetoothWidget
                 var path = Path.Combine(dir, "log.txt");
                 File.AppendAllText(path,
                     $"{DateTime.Now:O} [{category}] {(ex?.ToString() ?? "(no exception)")}{Environment.NewLine}");
+                try
+                {
+                    var localPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_log.txt");
+                    File.AppendAllText(localPath, $"{DateTime.Now:O} [{category}] {(ex?.ToString() ?? "(no exception)")}{Environment.NewLine}");
+                }
+                catch
+                {
+                    // ignore
+                }
             }
             catch
             {

@@ -1,0 +1,294 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    
+    <!-- AURORA - Ethereal Northern Lights Theme -->
+    <!-- Inspired by the dancing lights of the Arctic sky -->
+    <!-- Deep space blacks with aurora greens, magentas and cyans -->
+    <!-- Glassmorphism + Material Design + Smooth animations -->
+    
+    <!-- Primary Colors - Aurora Borealis -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00E5A0"/>          <!-- Aurora teal-green -->
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#E040FB"/>        <!-- Aurora magenta -->
+    <SolidColorBrush x:Key="AccentBrush" Color="#00B8D4"/>           <!-- Aurora cyan -->
+    
+    <!-- Background - Deep space gradient simulation -->
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#0A0E14"/>       <!-- Near-black space -->
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#111820"/>          <!-- Slightly lighter -->
+    <SolidColorBrush x:Key="CardBrush" Color="#1A2332"/>             <!-- Card glass base -->
+    
+    <!-- Text Colors -->
+    <SolidColorBrush x:Key="TextBrush" Color="#E8F4F8"/>             <!-- Ice white -->
+    <SolidColorBrush x:Key="SubTextBrush" Color="#6B8A99"/>          <!-- Muted aurora grey -->
+    
+    <!-- Status Colors - Vibrant aurora shades -->
+    <SolidColorBrush x:Key="SuccessBrush" Color="#00E676"/>          <!-- Bright aurora green -->
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFD740"/>          <!-- Golden aurora -->
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF5252"/>           <!-- Red aurora -->
+    
+    <!-- UI Elements -->
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#060A0F"/>         <!-- Darkest space -->
+    <SolidColorBrush x:Key="TitleTextBrush" Color="#00E5A0"/>        <!-- Aurora green title -->
+    <SolidColorBrush x:Key="BorderBrush" Color="#00E5A0"/>           <!-- Aurora green border -->
+    <SolidColorBrush x:Key="BorderLightBrush" Color="#E040FB"/>      <!-- Magenta highlight -->
+    <SolidColorBrush x:Key="BorderDarkBrush" Color="#1A2332"/>       <!-- Dark glass edge -->
+    <SolidColorBrush x:Key="ProgressBlockBrush" Color="#00E5A0"/>    <!-- Aurora progress -->
+    <SolidColorBrush x:Key="ProgressBarBgBrush" Color="#0A0E14"/>    <!-- Deep space bg -->
+    
+    <!-- Theme identifier -->
+    <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">AURORA</system:String>
+    <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Segoe UI</system:String>
+    
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- AURORA SPECIAL STYLES - Advanced Material Design + Glassmorphism        -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    
+    <!-- Aurora Gradient for special elements -->
+    <LinearGradientBrush x:Key="AuroraGradient" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#00E5A0" Offset="0"/>
+        <GradientStop Color="#00B8D4" Offset="0.5"/>
+        <GradientStop Color="#E040FB" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Animated shimmer gradient -->
+    <LinearGradientBrush x:Key="AuroraShimmer" StartPoint="0,0" EndPoint="1,0">
+        <GradientStop Color="#00E5A0" Offset="0"/>
+        <GradientStop Color="#00FFD0" Offset="0.3"/>
+        <GradientStop Color="#00B8D4" Offset="0.5"/>
+        <GradientStop Color="#E040FB" Offset="0.7"/>
+        <GradientStop Color="#00E5A0" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Glass effect background -->
+    <LinearGradientBrush x:Key="GlassGradient" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#2000E5A0" Offset="0"/>
+        <GradientStop Color="#10111820" Offset="0.5"/>
+        <GradientStop Color="#05000000" Offset="1"/>
+    </LinearGradientBrush>
+    
+    <!-- Glow effect for Aurora theme -->
+    <DropShadowEffect x:Key="AuroraGlow" 
+                      Color="#00E5A0" 
+                      BlurRadius="20" 
+                      ShadowDepth="0" 
+                      Opacity="0.5"/>
+    
+    <DropShadowEffect x:Key="AuroraMagentaGlow" 
+                      Color="#E040FB" 
+                      BlurRadius="15" 
+                      ShadowDepth="0" 
+                      Opacity="0.4"/>
+    
+    <DropShadowEffect x:Key="AuroraCyanGlow" 
+                      Color="#00B8D4" 
+                      BlurRadius="15" 
+                      ShadowDepth="0" 
+                      Opacity="0.4"/>
+
+    <!-- Aurora Card Style with glass effect -->
+    <Style x:Key="AuroraCardStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#251A2332" Offset="0"/>
+                    <GradientStop Color="#151A2332" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Padding" Value="18"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4000E5A0" Offset="0"/>
+                    <GradientStop Color="#2000B8D4" Offset="0.5"/>
+                    <GradientStop Color="#40E040FB" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00E5A0" BlurRadius="8" ShadowDepth="0" Opacity="0.15"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <!-- Aurora Button Style with ripple-like effect -->
+    <Style x:Key="AuroraButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#15FFFFFF"/>
+        <Setter Property="Foreground" Value="#E8F4F8"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#3000E5A0"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="ButtonBorder"
+                            Background="{TemplateBinding Background}" 
+                            BorderBrush="{TemplateBinding BorderBrush}" 
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect Color="#00E5A0" BlurRadius="0" ShadowDepth="0" Opacity="0"/>
+                        </Border.Effect>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#3000E5A0" Duration="0:0:0.2"/>
+                                        <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#8000E5A0" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="ButtonBorder"
+                                                         Storyboard.TargetProperty="(Border.Effect).(DropShadowEffect.BlurRadius)"
+                                                         To="15" Duration="0:0:0.2"/>
+                                        <DoubleAnimation Storyboard.TargetName="ButtonBorder"
+                                                         Storyboard.TargetProperty="(Border.Effect).(DropShadowEffect.Opacity)"
+                                                         To="0.4" Duration="0:0:0.2"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                        Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="#15FFFFFF" Duration="0:0:0.3"/>
+                                        <ColorAnimation Storyboard.TargetName="ButtonBorder"
+                                                        Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="#3000E5A0" Duration="0:0:0.3"/>
+                                        <DoubleAnimation Storyboard.TargetName="ButtonBorder"
+                                                         Storyboard.TargetProperty="(Border.Effect).(DropShadowEffect.BlurRadius)"
+                                                         To="0" Duration="0:0:0.3"/>
+                                        <DoubleAnimation Storyboard.TargetName="ButtonBorder"
+                                                         Storyboard.TargetProperty="(Border.Effect).(DropShadowEffect.Opacity)"
+                                                         To="0" Duration="0:0:0.3"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="ButtonBorder" Property="Background" Value="#5000E5A0"/>
+                            <Setter TargetName="ButtonBorder" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Aurora Progress Bar Style -->
+    <Style x:Key="AuroraProgressBarStyle" TargetType="ProgressBar">
+        <Setter Property="Height" Value="6"/>
+        <Setter Property="Background" Value="#20FFFFFF"/>
+        <Setter Property="Foreground" Value="{StaticResource AuroraGradient}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ProgressBar">
+                    <Grid>
+                        <Border x:Name="PART_Track" 
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="3"/>
+                        <Border x:Name="PART_Indicator"
+                                Background="{TemplateBinding Foreground}"
+                                CornerRadius="3"
+                                HorizontalAlignment="Left">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#00E5A0" BlurRadius="10" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                        </Border>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Aurora-exclusive default styles for compatibility -->
+    <Style x:Key="DeviceItemStyle" TargetType="Border" BasedOn="{StaticResource AuroraCardStyle}"/>
+    <!-- Retro-styled button (restored) -->
+    <Style x:Key="ThemedButtonStyle" TargetType="Button">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFF" Offset="0"/>
+                    <GradientStop Color="#FF00FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="#0D0D1A"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ControlTemplate.Resources>
+                        <DropShadowEffect x:Key="BtnEffectNormal" Color="#0A0A0A" BlurRadius="10" ShadowDepth="0" Opacity="0.22"/>
+                        <DropShadowEffect x:Key="BtnEffectHover" Color="#0A0A0A" BlurRadius="18" ShadowDepth="0" Opacity="0.34"/>
+                    </ControlTemplate.Resources>
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            Effect="{StaticResource BtnEffectNormal}">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Effect" Value="{StaticResource BtnEffectHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.975" ScaleY="0.975"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Text Styles -->
+    <Style x:Key="AuroraTitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="24"/>
+        <Setter Property="FontWeight" Value="Light"/>
+        <Setter Property="Foreground">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00E5A0" Offset="0"/>
+                    <GradientStop Color="#00FFD0" Offset="0.5"/>
+                    <GradientStop Color="#00B8D4" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    
+    <Style x:Key="AuroraSubtitleStyle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Foreground" Value="#6B8A99"/>
+        <Setter Property="Opacity" Value="0.9"/>
+    </Style>
+
+</ResourceDictionary>

@@ -27,5 +27,95 @@
     <!-- Theme identifier -->
     <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">NEONDRIFT</system:String>
     <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+
+    <!-- NeonDrift-exclusive card style (sunset chrome) -->
+    <Style x:Key="DeviceItemStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#2D1F3D" Offset="0"/>
+                    <GradientStop Color="#1A1025" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="Padding" Value="15"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FF79C6" Offset="0"/>
+                    <GradientStop Color="#BD93F9" Offset="0.7"/>
+                    <GradientStop Color="#00FFEF" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#FF79C6" BlurRadius="15" ShadowDepth="0" Opacity="0.35"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#2F2342"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="#00FFEF" BlurRadius="20" ShadowDepth="0" Opacity="0.45"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Retro-styled button (restored) -->
+    <Style x:Key="ThemedButtonStyle" TargetType="Button">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFF" Offset="0"/>
+                    <GradientStop Color="#FF00FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="#0D0D1A"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ControlTemplate.Resources>
+                        <DropShadowEffect x:Key="BtnEffectNormal" Color="#0A0A0A" BlurRadius="10" ShadowDepth="0" Opacity="0.22"/>
+                        <DropShadowEffect x:Key="BtnEffectHover" Color="#0A0A0A" BlurRadius="18" ShadowDepth="0" Opacity="0.34"/>
+                    </ControlTemplate.Resources>
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            Effect="{StaticResource BtnEffectNormal}">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Effect" Value="{StaticResource BtnEffectHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.975" ScaleY="0.975"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
 </ResourceDictionary>

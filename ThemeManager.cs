@@ -10,7 +10,9 @@ namespace BluetoothWidget
         Retro,      // Original cyan/magenta synthwave
         Pixel,      // Terminal green CRT style
         NeonDrift,  // Warm purple/pink/cyan synthwave
-        Moss        // Forest nature theme
+        Moss,       // Forest nature theme
+        Aurora,     // Northern lights glassmorphism
+        // Kenney removed
     }
 
     public class ThemeSettings
@@ -72,13 +74,14 @@ namespace BluetoothWidget
 
         public static void ToggleTheme()
         {
-            // Cycle through all 4 themes: Retro -> Pixel -> NeonDrift -> Moss -> Retro
+            // Cycle through themes: Retro -> Pixel -> NeonDrift -> Moss -> Aurora -> Retro
             var nextTheme = CurrentTheme switch
             {
                 AppTheme.Retro => AppTheme.Pixel,
                 AppTheme.Pixel => AppTheme.NeonDrift,
                 AppTheme.NeonDrift => AppTheme.Moss,
-                AppTheme.Moss => AppTheme.Retro,
+                AppTheme.Moss => AppTheme.Aurora,
+                AppTheme.Aurora => AppTheme.Retro,
                 _ => AppTheme.Retro
             };
             SetTheme(nextTheme);
@@ -88,23 +91,39 @@ namespace BluetoothWidget
         {
             var app = Application.Current;
             if (app == null) return;
-
-            app.Resources.MergedDictionaries.Clear();
-
-            var themePath = CurrentTheme switch
+            try
             {
-                AppTheme.Retro => "Themes/RetroTheme.xaml",
-                AppTheme.Pixel => "Themes/PixelTheme.xaml",
-                AppTheme.NeonDrift => "Themes/NeonDriftTheme.xaml",
-                AppTheme.Moss => "Themes/MossTheme.xaml",
-                _ => "Themes/RetroTheme.xaml"
-            };
+                app.Resources.MergedDictionaries.Clear();
 
-            var themeDict = new ResourceDictionary
+                var themePath = CurrentTheme switch
+                {
+                    AppTheme.Retro => "Themes/RetroTheme.xaml",
+                    AppTheme.Pixel => "Themes/PixelTheme.xaml",
+                    AppTheme.NeonDrift => "Themes/NeonDriftTheme.xaml",
+                    AppTheme.Moss => "Themes/MossTheme.xaml",
+                    AppTheme.Aurora => "Themes/AuroraTheme.xaml",
+                    _ => "Themes/RetroTheme.xaml"
+                };
+
+                var themeDict = new ResourceDictionary
+                {
+                    Source = new Uri(themePath, UriKind.Relative)
+                };
+                app.Resources.MergedDictionaries.Add(themeDict);
+            }
+            catch (Exception ex)
             {
-                Source = new Uri(themePath, UriKind.Relative)
-            };
-            app.Resources.MergedDictionaries.Add(themeDict);
+                // Log failure to load theme so we can debug missing keys/assets
+                try { App.LogToFile("ThemeManager.ApplyTheme", ex); } catch { }
+                // Fallback: attempt to load Retro theme
+                try
+                {
+                    var fallback = new ResourceDictionary { Source = new Uri("Themes/RetroTheme.xaml", UriKind.Relative) };
+                    app.Resources.MergedDictionaries.Clear();
+                    app.Resources.MergedDictionaries.Add(fallback);
+                }
+                catch { }
+            }
         }
     }
 }

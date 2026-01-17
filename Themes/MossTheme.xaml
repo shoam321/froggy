@@ -27,5 +27,90 @@
     <!-- Theme identifier -->
     <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">MOSS</system:String>
     <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+
+    <!-- Moss-exclusive card style (woodland matte) -->
+    <Style x:Key="DeviceItemStyle" TargetType="Border">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                    <GradientStop Color="#2E382A" Offset="0"/>
+                    <GradientStop Color="#252D21" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="Padding" Value="15"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="BorderBrush">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#4A5D3E" Offset="0"/>
+                    <GradientStop Color="#7EC699" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#0F0F0F" BlurRadius="8" ShadowDepth="0" Opacity="0.2"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#303928"/>
+                <Setter Property="BorderBrush" Value="#7EC699"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Retro-styled button (restored) -->
+    <Style x:Key="ThemedButtonStyle" TargetType="Button">
+        <Setter Property="Background">
+            <Setter.Value>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#00FFFF" Offset="0"/>
+                    <GradientStop Color="#FF00FF" Offset="1"/>
+                </LinearGradientBrush>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Foreground" Value="#0D0D1A"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="FontWeight" Value="Bold"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ControlTemplate.Resources>
+                        <DropShadowEffect x:Key="BtnEffectNormal" Color="#0A0A0A" BlurRadius="10" ShadowDepth="0" Opacity="0.22"/>
+                        <DropShadowEffect x:Key="BtnEffectHover" Color="#0A0A0A" BlurRadius="18" ShadowDepth="0" Opacity="0.34"/>
+                    </ControlTemplate.Resources>
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="8"
+                            Padding="{TemplateBinding Padding}"
+                            Effect="{StaticResource BtnEffectNormal}">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Root" Property="Effect" Value="{StaticResource BtnEffectHover}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Root" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.975" ScaleY="0.975"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
 </ResourceDictionary>

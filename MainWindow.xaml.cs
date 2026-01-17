@@ -24,135 +24,51 @@ namespace BluetoothWidget
     public partial class MainWindow : Window
     {
         private DispatcherTimer? refreshTimer;
-        private DispatcherTimer? progressAnimationTimer;
-        private DispatcherTimer? networkSpeedTimer;
-        private DispatcherTimer? marqueeTimer;
-        private NetworkSpeedHelper? _networkSpeedHelper;
-        private double _marqueePosition = 0;
-        private int _currentQuoteIndex = 0;
-        
-        // Leona and Kayle famous quotes from League of Legends
-        private readonly string[] _championQuotes = new string[]
-        {
-            // Leona - The Radiant Dawn
-            "* The dawn has arrived! *",
-            "* I will protect you. *",
-            "* The sun always rises. *",
-            "* Stand and fight! *",
-            "* Daylight! Find purchase! *",
-            "* Next time, try to leave a dent. *",
-            "* They will not escape the light. *",
-            "* Chosen of the sun! *",
-            // Kayle - The Righteous
-            "// Only the divine may judge. //",
-            "// In the name of justice! //",
-            "// Come forth, you will find honor in death. //",
-            "// Into the fray! //",
-            "// An eye for an eye. //",
-            "// Lead me to battle. //",
-            "// Your judgment is at hand. //",
-            "// I bring justice! //",
-            "// Holy fervor! //"
-        };
-        private Dictionary<string, Border> _deviceCards = new();
-        private Dictionary<string, WindowsBluetoothDevice> _currentDevices = new();
-        private bool _isFirstScan = true;
+
+        // Restored private fields removed by previous faulty edit
         private bool _isLoading = false;
-        private bool _hasFoundDevices = false; // Once true, never show loading animation again
-        private Border? _laptopBatteryCard = null; // Card for laptop battery
-        
-        // System tray icon
-        private WinForms.NotifyIcon? _trayIcon;
-        
-        // Text size settings
+        private DispatcherTimer? progressAnimationTimer;
+        private Dictionary<string, WindowsBluetoothDevice> _currentDevices = new Dictionary<string, WindowsBluetoothDevice>();
+        private Dictionary<string, Border> _deviceCards = new Dictionary<string, Border>();
+        private NetworkSpeedHelper? _networkSpeedHelper;
+        private DispatcherTimer? networkSpeedTimer;
+        private double _marqueePosition = 0;
+        private List<string> _championQuotes = new List<string>();
+        private int _currentQuoteIndex = 0;
+        private DispatcherTimer? marqueeTimer;
         private TextSizeLevel _currentTextSize = TextSizeLevel.Medium;
-        
-        // Screen edge snapping - increased for better "smash" detection
-        private const int SnapDistance = 30; // Pixels from edge to trigger snap
-        private const int CornerSnapDistance = 50; // Larger snap zone for corners
+        private const int SnapDistance = 12;
+        private const int CornerSnapDistance = 28;
+        private bool _hasFoundDevices = false;
+        private Border? _laptopBatteryCard;
+        private WinForms.NotifyIcon? _trayIcon;
 
         public MainWindow()
         {
-            // Apply saved theme before InitializeComponent
-            ThemeManager.ApplyTheme();
-            
-            InitializeComponent();
-            Loaded += MainWindow_Loaded;
-            
-            // Subscribe to theme changes
-            ThemeManager.ThemeChanged += OnThemeChanged;
-            
-            // Initialize system tray icon
-            InitializeTrayIcon();
-            
-            // Apply theme-specific styling
-            ApplyThemeSpecificStyles();
-            
-            // Load and apply saved text size
-            LoadSavedTextSize();
-            
-            // Add screen edge snapping via Windows messages for better "smash" detection
-            this.SourceInitialized += MainWindow_SourceInitialized;
-            
-            // Check for mascot GIF
-            LoadMascot();
-            
-            // Start splash video
-            PlaySplashVideo();
-        }
+            // Initialize XAML components and hook lifecycle events
+            this.InitializeComponent();
+            this.Loaded += MainWindow_Loaded;
 
-        /// <summary>
-        /// Loads the mascot GIF if it exists.
-        /// </summary>
-        private void LoadMascot()
-        {
+            // Try to play the intro animation if present
             try
             {
-                var mascotPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "mascot.gif");
-                if (System.IO.File.Exists(mascotPath))
-                {
-                    var uri = new Uri(mascotPath);
-                    WpfAnimatedGif.ImageBehavior.SetAnimatedSource(MascotImage, new System.Windows.Media.Imaging.BitmapImage(uri));
-                    MascotImage.Visibility = Visibility.Visible;
-                    Console.WriteLine("Mascot loaded!");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"No mascot: {ex.Message}");
-            }
-        }
-
-        #region Splash Video
-
-        /// <summary>
-        /// Plays the splash video on app startup.
-        /// </summary>
-        private void PlaySplashVideo()
-        {
-            try
-            {
-                // Get the video path from the output directory
-                var exeDir = AppDomain.CurrentDomain.BaseDirectory;
-                var videoPath = System.IO.Path.Combine(exeDir, "Assets", "animation.mp4");
-                
+                var videoPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "animation.mp4");
                 if (System.IO.File.Exists(videoPath))
                 {
-                    SplashVideo.Source = new Uri(videoPath, UriKind.Absolute);
-                    SplashVideo.Play();
                     VideoSplashOverlay.Visibility = Visibility.Visible;
+                    SplashVideo.Source = new Uri(videoPath);
+                    SplashVideo.LoadedBehavior = MediaState.Manual;
+                    SplashVideo.Play();
                 }
                 else
                 {
-                    // No video file found, skip splash
-                    Console.WriteLine($"Splash video not found at: {videoPath}");
-                    HideSplashVideo();
+                    VideoSplashOverlay.Visibility = Visibility.Collapsed;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error playing splash video: {ex.Message}");
-                HideSplashVideo();
+                Console.WriteLine($"Failed to play splash video: {ex.Message}");
+                VideoSplashOverlay.Visibility = Visibility.Collapsed;
             }
         }
 
@@ -213,7 +129,7 @@ namespace BluetoothWidget
             HideSplashVideo();
         }
 
-        #endregion
+        
 
         private void OnThemeChanged()
         {
@@ -238,7 +154,7 @@ namespace BluetoothWidget
             _isLoading = true;
             _spinnerAngle = 0;
             LoadingPanel.Visibility = Visibility.Visible;
-            LoadingText.Text = "Finding devices...";
+            LoadingText.Text = "Finding Bluetooth devices…";
             
             // Start spinner animation
             progressAnimationTimer = new DispatcherTimer 
@@ -338,19 +254,40 @@ namespace BluetoothWidget
 
         private void RefreshAllCards()
         {
-            // Clear and rebuild all cards with new theme
-            foreach (var kvp in _currentDevices.ToList())
+            // Rebuild all device cards so theme-specific layouts and styles apply
+            try
             {
-                if (_deviceCards.TryGetValue(kvp.Key, out var card))
+                DeviceListPanel.Children.Clear();
+                _deviceCards.Clear();
+
+                foreach (var kvp in _currentDevices.ToList())
                 {
-                    UpdateDeviceCard(card, kvp.Value);
+                    var newCard = CreateDeviceCard(kvp.Value);
+                    _deviceCards[kvp.Key] = newCard;
+                    DeviceListPanel.Children.Add(newCard);
                 }
+            }
+            catch (Exception ex)
+            {
+                App.LogToFile("RefreshAllCards", ex);
             }
         }
 
         private void ThemeButton_Click(object sender, RoutedEventArgs e)
         {
             ThemeManager.ToggleTheme();
+        }
+
+        private void ThemeMenuItem_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.MenuItem mi && mi.Tag is string tag)
+            {
+                if (Enum.TryParse<AppTheme>(tag, out var theme))
+                {
+                    ThemeManager.SetTheme(theme);
+                    OnThemeChanged();
+                }
+            }
         }
 
         private void PinButton_Click(object sender, RoutedEventArgs e)
@@ -365,16 +302,31 @@ namespace BluetoothWidget
             try
             {
                 Console.WriteLine("MainWindow loaded, starting scan...");
+                App.LogToFile("MainWindow_Loaded", null);
                 
                 // Start marquee animation immediately
                 InitializeMarquee();
+
+                // Apply saved theme now that the window is initialized (safer than static init)
+                try { ThemeManager.ApplyTheme(); } catch (Exception ex) { App.LogToFile("ApplyThemeFromLoaded", ex); }
+
+                // Subscribe to theme changes so UI updates when theme changes
+                ThemeManager.ThemeChanged += OnThemeChanged;
+
+                try
+                {
+                    await ScanForDevices();
+                }
+                catch (Exception ex)
+                {
+                    App.LogToFile("ScanForDevices_Exception", ex);
+                    throw;
+                }
                 
-                await ScanForDevices();
-                
-                // Set up auto-refresh every 30 seconds for Bluetooth
+                // Set up auto-refresh every 60 seconds for Bluetooth (reduced from 30)
                 refreshTimer = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(30)
+                    Interval = TimeSpan.FromSeconds(60) // Reduced from 30 to 60 seconds
                 };
                 refreshTimer.Tick += async (s, args) => await ScanForDevices();
                 refreshTimer.Start();
@@ -385,6 +337,7 @@ namespace BluetoothWidget
             }
             catch (Exception ex)
             {
+                App.LogToFile("MainWindow_Loaded_Exception", ex);
                 Console.WriteLine($"ERROR in MainWindow_Loaded: {ex}");
                 MessageBox.Show($"Error starting widget: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
@@ -402,7 +355,7 @@ namespace BluetoothWidget
                 
                 networkSpeedTimer = new DispatcherTimer
                 {
-                    Interval = TimeSpan.FromSeconds(2)
+                    Interval = TimeSpan.FromSeconds(5) // Reduced from 2 to 5 seconds
                 };
                 networkSpeedTimer.Tick += async (s, args) => await UpdateNetworkSpeedAsync();
                 networkSpeedTimer.Start();
@@ -426,13 +379,25 @@ namespace BluetoothWidget
             _marqueePosition = MarqueeCanvas.ActualWidth > 0 ? MarqueeCanvas.ActualWidth : 400;
             Canvas.SetLeft(MarqueeText, _marqueePosition);
             
-            // Set initial quote
+            // Ensure we have at least one quote to avoid index errors
+            if (_championQuotes == null || _championQuotes.Count == 0)
+            {
+                _championQuotes = new List<string> { MarqueeText.Text ?? "" };
+                _currentQuoteIndex = 0;
+            }
+
+            // Ensure current index is valid and set initial quote
+            if (_currentQuoteIndex < 0 || _championQuotes.Count == 0 || _currentQuoteIndex >= _championQuotes.Count)
+            {
+                App.LogToFile("Marquee_Index_Adjust", new Exception($"Adjusting marquee index from {_currentQuoteIndex} to 0. QuoteCount={_championQuotes.Count}"));
+                _currentQuoteIndex = 0;
+            }
             MarqueeText.Text = _championQuotes[_currentQuoteIndex];
             
-            // Create timer for smooth animation (~60fps)
+            // Create timer for smooth animation (~20fps instead of ~33fps)
             marqueeTimer = new DispatcherTimer
             {
-                Interval = TimeSpan.FromMilliseconds(30)
+                Interval = TimeSpan.FromMilliseconds(50) // Reduced from 30 to 50ms
             };
             marqueeTimer.Tick += MarqueeTimer_Tick;
             marqueeTimer.Start();
@@ -454,10 +419,13 @@ namespace BluetoothWidget
             // When text has scrolled completely off the left side, reset to right
             if (_marqueePosition < -textWidth)
             {
-                // Move to next quote
-                _currentQuoteIndex = (_currentQuoteIndex + 1) % _championQuotes.Length;
-                MarqueeText.Text = _championQuotes[_currentQuoteIndex];
-                
+                // Move to next quote (guard against empty list just in case)
+                if (_championQuotes != null && _championQuotes.Count > 0)
+                {
+                    _currentQuoteIndex = (_currentQuoteIndex + 1) % _championQuotes.Count;
+                    MarqueeText.Text = _championQuotes[_currentQuoteIndex];
+                }
+
                 // Reset position to start from right edge
                 _marqueePosition = MarqueeCanvas.ActualWidth > 0 ? MarqueeCanvas.ActualWidth : 400;
             }
@@ -569,6 +537,20 @@ namespace BluetoothWidget
         private void HelpButton_Click(object sender, RoutedEventArgs e)
         {
             var aboutText = @"FROGGY - Bluetooth Battery Widget
+
+       ,     ,
+      /(     )\
+     (  \___/  )
+     (  o   o  )
+      \   V   /
+      /`-----'\
+     /  _   _  \
+    |  | | | |  |
+    |  |_| |_|  |
+    |   _   _   |
+   (O) | | | | (O)
+       | | | |
+       |_| |_|
 
 What is this?
 Froggy monitors your Bluetooth devices (headphones, mice, keyboards, etc.) and shows their battery levels in real-time.
@@ -877,6 +859,7 @@ Made with love for gamers who need to know when their headset is about to die mi
             try
             {
                 Console.WriteLine("ScanForDevices called");
+                App.LogToFile("ScanForDevices", null);
                 
                 // Only show loading animation if we haven't found devices yet
                 if (!_hasFoundDevices)
@@ -965,7 +948,7 @@ Made with love for gamers who need to know when their headset is about to die mi
                     LoadingPanel.Visibility = Visibility.Visible;
                     LoadingText.Visibility = Visibility.Visible;
                     SpinnerArc.Visibility = Visibility.Collapsed;
-                    LoadingText.Text = "No Bluetooth devices found\n\nMake sure devices are:\n- Paired in Windows Settings\n- Turned on and connected";
+                    LoadingText.Text = "No Bluetooth devices found yet.\n\nTry:\n• Turn Bluetooth ON in Windows\n• Make sure your device is powered on\n• Pair/connect it in Settings";
                 }
             }
             catch (Exception ex)
@@ -1027,6 +1010,12 @@ Made with love for gamers who need to know when their headset is about to die mi
         /// </summary>
         private Border CreateLaptopBatteryCard(int batteryPercent, bool isCharging, string timeRemaining)
         {
+            // AURORA: Use completely different card design
+            if (ThemeManager.CurrentTheme == AppTheme.Aurora)
+            {
+                return CreateAuroraLaptopCard(batteryPercent, isCharging, timeRemaining);
+            }
+
             var card = new Border
             {
                 Style = (Style)FindResource("DeviceItemStyle"),
@@ -1040,12 +1029,18 @@ Made with love for gamers who need to know when their headset is about to die mi
             // Left side - device info (matching Bluetooth device card style)
             var infoPanel = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
             
+            // Aurora uses gradient text, others use solid
+            Brush nameBrush = ThemeManager.CurrentTheme == AppTheme.Aurora 
+                ? CreateAuroraGradientBrush() 
+                : (Brush)FindResource("PrimaryBrush");
+            
             var nameText = new TextBlock
             {
                 Text = "Laptop",
                 FontSize = 16,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource("PrimaryBrush")
+                FontFamily = ThemeManager.CurrentTheme == AppTheme.Aurora ? new FontFamily("Segoe UI") : new FontFamily("Consolas"),
+                Foreground = nameBrush
             };
             infoPanel.Children.Add(nameText);
 
@@ -1114,15 +1109,15 @@ Made with love for gamers who need to know when their headset is about to die mi
         {
             if (card.Child is Grid grid)
             {
-                // Update status
-                if (grid.Children[0] is StackPanel infoPanel)
+                // Update status (guard against unexpected/missing children)
+                if (grid.Children.Count > 0 && grid.Children[0] is StackPanel infoPanel)
                 {
-                    if (infoPanel.Children[1] is TextBlock statusText)
+                    if (infoPanel.Children.Count > 1 && infoPanel.Children[1] is TextBlock statusText)
                     {
                         statusText.Text = isCharging ? "● CHARGING" : "● ON BATTERY";
                         statusText.Foreground = isCharging ? Brushes.Orange : Brushes.LimeGreen;
                     }
-                    
+
                     // Update time remaining
                     if (infoPanel.Children.Count > 2 && infoPanel.Children[2] is TextBlock timeText)
                     {
@@ -1131,12 +1126,12 @@ Made with love for gamers who need to know when their headset is about to die mi
                     }
                 }
 
-                // Update battery display
-                if (grid.Children[1] is StackPanel batteryPanel)
+                // Update battery display (guard against missing children)
+                if (grid.Children.Count > 1 && grid.Children[1] is StackPanel batteryPanel)
                 {
-                    if (batteryPanel.Children[0] is TextBlock icon)
+                    if (batteryPanel.Children.Count > 0 && batteryPanel.Children[0] is TextBlock icon)
                         icon.Text = isCharging ? "🔌" : "💻";
-                    if (batteryPanel.Children[1] is TextBlock percent)
+                    if (batteryPanel.Children.Count > 1 && batteryPanel.Children[1] is TextBlock percent)
                     {
                         percent.Text = $"{batteryPercent}%";
                         percent.Foreground = GetBatteryColor(batteryPercent);
@@ -1165,13 +1160,20 @@ Made with love for gamers who need to know when their headset is about to die mi
                 Tag = device.Id  // Store device ID for later updates
             };
 
-            // Theme-aware context menu colors based on current theme
+            // Apply Aurora special effects if using Aurora theme
             var theme = ThemeManager.CurrentTheme;
+            if (theme == AppTheme.Aurora)
+            {
+                ApplyAuroraCardEffect(deviceBorder);
+            }
+
+            // Theme-aware context menu colors based on current theme
             var (menuBg, menuBorder, menuText) = theme switch
             {
                 AppTheme.Pixel => (Color.FromRgb(37, 37, 37), Color.FromRgb(0, 170, 0), Color.FromRgb(0, 255, 0)),
                 AppTheme.NeonDrift => (Color.FromRgb(37, 24, 50), Color.FromRgb(189, 147, 249), Color.FromRgb(232, 224, 240)),
                 AppTheme.Moss => (Color.FromRgb(37, 45, 33), Color.FromRgb(74, 93, 62), Color.FromRgb(212, 207, 196)),
+                AppTheme.Aurora => (Color.FromRgb(26, 35, 50), Color.FromRgb(0, 229, 160), Color.FromRgb(232, 244, 248)),
                 _ => (Color.FromRgb(26, 26, 46), Color.FromRgb(0, 255, 255), Color.FromRgb(224, 224, 224)) // Retro
             };
 
@@ -1204,14 +1206,131 @@ Made with love for gamers who need to know when their headset is about to die mi
             
             deviceBorder.ContextMenu = contextMenu;
 
+            // Theme-specific full-card layouts for Pixel/NeonDrift/Moss/Aurora
+            switch (theme)
+            {
+                case AppTheme.Pixel:
+                    {
+                        var caseGrid = new Grid();
+                        caseGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                        caseGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                        var left = new StackPanel { Orientation = Orientation.Vertical };
+                        var n = new TextBlock { Name = "DeviceName", Text = displayName, FontFamily = new FontFamily("Consolas"), FontSize = 15, Foreground = new SolidColorBrush(Color.FromRgb(0,255,0)) };
+                        left.Children.Add(n);
+                        var s = new TextBlock { Name = "StatusText", Text = device.IsConnected ? "ONLINE" : "OFFLINE", FontFamily = new FontFamily("Consolas"), FontSize = 11, Foreground = new SolidColorBrush(Color.FromRgb(0,170,0)) };
+                        left.Children.Add(s);
+
+                        Grid.SetColumn(left, 0);
+                        caseGrid.Children.Add(left);
+
+                        // Pixel-style tiny bar indicator
+                        var bar = new Rectangle { Width = 80, Height = 12, RadiusX = 1, RadiusY = 1, Fill = new SolidColorBrush(Color.FromRgb(0,34,0)), Stroke = new SolidColorBrush(Color.FromRgb(0,170,0)), StrokeThickness = 2 };
+                        var fill = new Rectangle { Name = "BatteryFill", Width = Math.Max(4, (device.BatteryLevel ?? 0) * 80 / 100), Height = 8, Fill = new SolidColorBrush(Color.FromRgb(0,255,0)), HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(2,2,2,2) };
+                        var barGrid = new Grid { Name = "BatteryBar", Width = 80, Height = 12, HorizontalAlignment = HorizontalAlignment.Right };
+                        barGrid.Children.Add(bar);
+                        barGrid.Children.Add(fill);
+
+                        var right = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+                        var percent = new TextBlock
+                        {
+                            Name = "BatteryText",
+                            Text = GetBatteryDisplayText(device),
+                            FontFamily = new FontFamily("Consolas"),
+                            FontSize = 14,
+                            FontWeight = FontWeights.Bold,
+                            Foreground = new SolidColorBrush(Color.FromRgb(0, 255, 0)),
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Margin = new Thickness(0, 0, 0, 4)
+                        };
+                        right.Children.Add(percent);
+                        right.Children.Add(barGrid);
+
+                        Grid.SetColumn(right, 1);
+                        caseGrid.Children.Add(right);
+
+                        deviceBorder.Style = (Style)FindResource("DeviceItemStyle");
+                        deviceBorder.Child = caseGrid;
+                        return deviceBorder;
+                    }
+                case AppTheme.NeonDrift:
+                    {
+                        var caseGrid = new Grid();
+                        caseGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+                        caseGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+
+                        var left = new StackPanel();
+                        var title = new TextBlock { Name = "DeviceName", Text = displayName, FontSize = 17, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("PrimaryBrush"), FontFamily = new FontFamily("Consolas") };
+                        left.Children.Add(title);
+                        var stats = new TextBlock { Name = "StatsText", Text = device.BatteryLevel.HasValue ? BatteryTracker.GetSummaryText(device.Id) : "", FontSize = 12, Foreground = (Brush)FindResource("SubTextBrush") };
+                        left.Children.Add(stats);
+
+                        Grid.SetColumn(left, 0);
+                        caseGrid.Children.Add(left);
+
+                        var right = new StackPanel { Orientation = Orientation.Vertical, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center };
+                        var percent = new TextBlock
+                        {
+                            Name = "BatteryText",
+                            Text = GetBatteryDisplayText(device),
+                            FontSize = 14,
+                            FontWeight = FontWeights.Bold,
+                            Foreground = (Brush)FindResource("PrimaryBrush"),
+                            FontFamily = new FontFamily("Consolas"),
+                            HorizontalAlignment = HorizontalAlignment.Right,
+                            Margin = new Thickness(0, 0, 0, 4)
+                        };
+                        right.Children.Add(percent);
+
+                        // Neon progress bar
+                        var progress = new ProgressBar { Name = "BatteryProgress", Width = 110, Height = 8, Value = device.BatteryLevel ?? 0, Foreground = (Brush)FindResource("ProgressBlockBrush"), Background = (Brush)FindResource("ProgressBarBgBrush") };
+                        right.Children.Add(progress);
+
+                        Grid.SetColumn(right, 1);
+                        caseGrid.Children.Add(right);
+
+                        deviceBorder.Style = (Style)FindResource("DeviceItemStyle");
+                        deviceBorder.Child = caseGrid;
+                        return deviceBorder;
+                    }
+                case AppTheme.Moss:
+                    {
+                        var caseGrid = new Grid();
+                        caseGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+                        caseGrid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                        var title = new TextBlock { Name = "DeviceName", Text = displayName, FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = (Brush)FindResource("PrimaryBrush"), FontFamily = new FontFamily("Consolas") };
+                        Grid.SetRow(title, 0);
+                        caseGrid.Children.Add(title);
+
+                        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0,6,0,0) };
+                        var leaf = new TextBlock { Text = "🌿", FontSize = 18, Margin = new Thickness(0,0,8,0) };
+                        row.Children.Add(leaf);
+                        var percent = new TextBlock { Name = "BatteryText", Text = GetBatteryDisplayText(device), FontSize = 16, FontWeight = FontWeights.Bold, Foreground = (Brush)FindResource("SuccessBrush") };
+                        row.Children.Add(percent);
+                        Grid.SetRow(row, 1);
+                        caseGrid.Children.Add(row);
+
+                        deviceBorder.Style = (Style)FindResource("DeviceItemStyle");
+                        deviceBorder.Child = caseGrid;
+                        return deviceBorder;
+                    }
+                case AppTheme.Aurora:
+                    {
+                        return CreateAuroraDeviceCard(device, displayName);
+                    }
+                default:
+                    break; // fall through to default (Retro) layout below
+            }
+
             var grid = new Grid();
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
             var infoStack = new StackPanel { Name = "InfoStack" };
 
-            // Theme font
-            var themeFont = new FontFamily("Consolas");
+            // Theme font - Aurora uses Segoe UI for modern look
+            var themeFont = theme == AppTheme.Aurora ? new FontFamily("Segoe UI") : new FontFamily("Consolas");
 
             // Theme-aware colors for device cards
             Brush nameColor = theme switch
@@ -1219,6 +1338,7 @@ Made with love for gamers who need to know when their headset is about to die mi
                 AppTheme.Pixel => new SolidColorBrush(Color.FromRgb(0, 255, 0)),          // Bright green
                 AppTheme.NeonDrift => new SolidColorBrush(Color.FromRgb(0, 255, 239)),    // Cyan glow
                 AppTheme.Moss => new SolidColorBrush(Color.FromRgb(212, 207, 196)),       // Warm parchment
+                AppTheme.Aurora => CreateAuroraGradientBrush(),                           // Aurora gradient
                 _ => new LinearGradientBrush(Color.FromRgb(255, 255, 255), Color.FromRgb(0, 255, 255), 0) // Retro gradient
             };
             
@@ -1227,6 +1347,7 @@ Made with love for gamers who need to know when their headset is about to die mi
                 AppTheme.Pixel => Color.FromRgb(0, 255, 136),       // Neon green
                 AppTheme.NeonDrift => Color.FromRgb(80, 250, 123),  // Neon green
                 AppTheme.Moss => Color.FromRgb(152, 195, 121),      // Bright moss
+                AppTheme.Aurora => Color.FromRgb(0, 230, 118),      // Aurora green
                 _ => Color.FromRgb(0, 255, 136)                      // Retro neon
             };
             
@@ -1235,8 +1356,15 @@ Made with love for gamers who need to know when their headset is about to die mi
                 AppTheme.Pixel => Color.FromRgb(255, 170, 0),       // Amber
                 AppTheme.NeonDrift => Color.FromRgb(255, 121, 198), // Hot pink
                 AppTheme.Moss => Color.FromRgb(209, 154, 102),      // Autumn orange
+                AppTheme.Aurora => Color.FromRgb(224, 64, 251),     // Aurora magenta
                 _ => Color.FromRgb(255, 0, 255)                      // Magenta
             };
+
+            // AURORA THEME: Completely different card layout with circular battery ring
+            if (theme == AppTheme.Aurora)
+            {
+                return CreateAuroraDeviceCard(device, displayName);
+            }
 
             var nameText = new TextBlock
             {
@@ -1347,7 +1475,7 @@ Made with love for gamers who need to know when their headset is about to die mi
                 ? Color.FromRgb(255, 170, 0)     // Amber for pixel dark
                 : Color.FromRgb(255, 0, 255);    // Magenta for retro
 
-            // Find and update text elements
+            // Find and update elements (text + simple indicators)
             foreach (var child in grid.Children)
             {
                 if (child is StackPanel stack)
@@ -1382,6 +1510,25 @@ Made with love for gamers who need to know when their headset is about to die mi
                                     break;
                             }
                         }
+                        else if (stackChild is ProgressBar pb)
+                        {
+                            if (pb.Name == "BatteryProgress")
+                            {
+                                pb.Value = device.BatteryLevel ?? 0;
+                            }
+                        }
+                        else if (stackChild is Grid innerGrid)
+                        {
+                            // Pixel theme battery bar fill update
+                            foreach (var gChild in innerGrid.Children)
+                            {
+                                if (gChild is Rectangle r && r.Name == "BatteryFill")
+                                {
+                                    var level = device.BatteryLevel ?? 0;
+                                    r.Width = Math.Max(4, level * 80 / 100);
+                                }
+                            }
+                        }
                         else if (stackChild is StackPanel innerStack)
                         {
                             foreach (var innerChild in innerStack.Children)
@@ -1398,6 +1545,24 @@ Made with love for gamers who need to know when their headset is about to die mi
                                             innerTb.Foreground = GetBatteryColor(device.BatteryLevel, device.IsConnected);
                                             innerTb.ToolTip = GetBatteryTooltip(device);
                                             break;
+                                    }
+                                }
+                                else if (innerChild is ProgressBar innerPb)
+                                {
+                                    if (innerPb.Name == "BatteryProgress")
+                                    {
+                                        innerPb.Value = device.BatteryLevel ?? 0;
+                                    }
+                                }
+                                else if (innerChild is Grid g)
+                                {
+                                    foreach (var gChild in g.Children)
+                                    {
+                                        if (gChild is Rectangle r && r.Name == "BatteryFill")
+                                        {
+                                            var level = device.BatteryLevel ?? 0;
+                                            r.Width = Math.Max(4, level * 80 / 100);
+                                        }
                                     }
                                 }
                             }
@@ -1418,6 +1583,575 @@ Made with love for gamers who need to know when their headset is about to die mi
             
             // Add ~ prefix for fallback (less reliable) readings
             return device.IsBatteryFallback ? $"~{device.BatteryLevel}%" : $"{device.BatteryLevel}%";
+        }
+
+        /// <summary>
+        /// Creates the beautiful Aurora gradient brush for text
+        /// </summary>
+        private LinearGradientBrush CreateAuroraGradientBrush()
+        {
+            var brush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 0)
+            };
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 229, 160), 0));    // Aurora teal
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 255, 208), 0.5));  // Bright cyan
+            brush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 184, 212), 1));    // Deep cyan
+            return brush;
+        }
+
+        /// <summary>
+        /// Applies Aurora-specific styling to a device card border
+        /// </summary>
+        private void ApplyAuroraCardEffect(Border border)
+        {
+            // Aurora glass gradient background
+            var glassBg = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(40, 26, 35, 50), 0));
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(25, 26, 35, 50), 1));
+            border.Background = glassBg;
+            
+            // Aurora gradient border
+            var borderBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 0, 229, 160), 0));    // Teal
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(50, 0, 184, 212), 0.5));  // Cyan
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 224, 64, 251), 1));   // Magenta
+            border.BorderBrush = borderBrush;
+            border.BorderThickness = new Thickness(1);
+            border.CornerRadius = new CornerRadius(16);
+            border.Padding = new Thickness(18);
+            
+            // Soft glow effect
+            border.Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(0, 229, 160),
+                BlurRadius = 12,
+                ShadowDepth = 0,
+                Opacity = 0.2
+            };
+            
+            // Hover animation
+            border.MouseEnter += (s, e) =>
+            {
+                border.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0, 229, 160),
+                    BlurRadius = 25,
+                    ShadowDepth = 0,
+                    Opacity = 0.5
+                };
+            };
+            border.MouseLeave += (s, e) =>
+            {
+                border.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0, 229, 160),
+                    BlurRadius = 12,
+                    ShadowDepth = 0,
+                    Opacity = 0.2
+                };
+            };
+        }
+
+        /// <summary>
+        /// Creates Aurora-style laptop battery card with circular ring
+        /// </summary>
+        private Border CreateAuroraLaptopCard(int batteryPercent, bool isCharging, string timeRemaining)
+        {
+            var card = new Border
+            {
+                Tag = "LaptopBattery",
+                Cursor = Cursors.Hand,
+                Margin = new Thickness(0, 0, 0, 14),
+                CornerRadius = new CornerRadius(20),
+                Padding = new Thickness(16),
+            };
+            
+            // Glass background with slight purple tint for laptop
+            var glassBg = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(45, 40, 30, 60), 0));
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(30, 20, 20, 40), 1));
+            card.Background = glassBg;
+            
+            // Purple-tinted gradient border for laptop
+            var borderBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(120, 224, 64, 251), 0));
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 0, 184, 212), 0.5));
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(120, 0, 229, 160), 1));
+            card.BorderBrush = borderBrush;
+            card.BorderThickness = new Thickness(1.5);
+            
+            // Purple glow for laptop
+            card.Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(224, 64, 251),
+                BlurRadius = 15,
+                ShadowDepth = 0,
+                Opacity = 0.25
+            };
+
+            // Main layout
+            var mainGrid = new Grid();
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) });
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+
+            // Circular battery ring
+            var ringContainer = new Grid
+            {
+                Width = 60,
+                Height = 60,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var bgRing = new Ellipse
+            {
+                Width = 56,
+                Height = 56,
+                StrokeThickness = 5,
+                Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                Fill = Brushes.Transparent
+            };
+            ringContainer.Children.Add(bgRing);
+
+            var progressRing = CreateBatteryArc(batteryPercent, true);
+            ringContainer.Children.Add(progressRing);
+
+            // Charging icon or percentage
+            var centerContent = new TextBlock
+            {
+                Text = isCharging ? "⚡" : $"{batteryPercent}%",
+                FontSize = isCharging ? 20 : 13,
+                FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 244, 248)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            ringContainer.Children.Add(centerContent);
+
+            Grid.SetColumn(ringContainer, 0);
+            mainGrid.Children.Add(ringContainer);
+
+            // Info panel
+            var infoStack = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 0, 0)
+            };
+
+            // Laptop name with magenta gradient
+            var laptopBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 0)
+            };
+            laptopBrush.GradientStops.Add(new GradientStop(Color.FromRgb(224, 64, 251), 0));
+            laptopBrush.GradientStops.Add(new GradientStop(Color.FromRgb(0, 184, 212), 1));
+
+            var nameText = new TextBlock
+            {
+                Text = "💻 Laptop",
+                FontSize = 15,
+                FontWeight = FontWeights.SemiBold,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = laptopBrush
+            };
+            infoStack.Children.Add(nameText);
+
+            // Status
+            var statusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0) };
+            var statusDot = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = isCharging 
+                    ? new SolidColorBrush(Color.FromRgb(255, 215, 64))
+                    : new SolidColorBrush(Color.FromRgb(0, 230, 118)),
+                Margin = new Thickness(0, 0, 6, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            if (isCharging)
+            {
+                var pulseAnim = new System.Windows.Media.Animation.DoubleAnimation
+                {
+                    From = 0.4,
+                    To = 1.0,
+                    Duration = TimeSpan.FromSeconds(0.8),
+                    AutoReverse = true,
+                    RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+                };
+                statusDot.BeginAnimation(Ellipse.OpacityProperty, pulseAnim);
+            }
+            statusPanel.Children.Add(statusDot);
+            
+            var statusText = new TextBlock
+            {
+                Text = isCharging ? "Charging" : "On Battery",
+                FontSize = 11,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = new SolidColorBrush(Color.FromRgb(107, 138, 153)),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            statusPanel.Children.Add(statusText);
+            infoStack.Children.Add(statusPanel);
+
+            // Time remaining
+            if (!string.IsNullOrEmpty(timeRemaining))
+            {
+                var timeText = new TextBlock
+                {
+                    Text = timeRemaining,
+                    FontSize = 11,
+                    FontFamily = new FontFamily("Segoe UI"),
+                    Foreground = new SolidColorBrush(Color.FromRgb(0, 184, 212)),
+                    Margin = new Thickness(0, 4, 0, 0)
+                };
+                infoStack.Children.Add(timeText);
+            }
+
+            Grid.SetColumn(infoStack, 1);
+            mainGrid.Children.Add(infoStack);
+
+            card.Child = mainGrid;
+
+            // Hover effects
+            card.MouseEnter += (s, e) =>
+            {
+                card.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(224, 64, 251),
+                    BlurRadius = 30,
+                    ShadowDepth = 0,
+                    Opacity = 0.5
+                };
+                card.RenderTransform = new ScaleTransform(1.02, 1.02);
+                card.RenderTransformOrigin = new Point(0.5, 0.5);
+            };
+            card.MouseLeave += (s, e) =>
+            {
+                card.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(224, 64, 251),
+                    BlurRadius = 15,
+                    ShadowDepth = 0,
+                    Opacity = 0.25
+                };
+                card.RenderTransform = null;
+            };
+
+            return card;
+        }
+
+        /// <summary>
+        /// Creates a completely unique Aurora-style device card with circular battery ring
+        /// </summary>
+        private Border CreateAuroraDeviceCard(WindowsBluetoothDevice device, string displayName)
+        {
+            var card = new Border
+            {
+                Tag = device.Id,
+                Cursor = Cursors.Hand,
+                Margin = new Thickness(0, 0, 0, 14),
+                CornerRadius = new CornerRadius(20),
+                Padding = new Thickness(16),
+            };
+            
+            // Glass background
+            var glassBg = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(45, 26, 35, 50), 0));
+            glassBg.GradientStops.Add(new GradientStop(Color.FromArgb(30, 17, 24, 32), 1));
+            card.Background = glassBg;
+            
+            // Animated gradient border
+            var borderBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(120, 0, 229, 160), 0));
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(80, 0, 184, 212), 0.5));
+            borderBrush.GradientStops.Add(new GradientStop(Color.FromArgb(120, 224, 64, 251), 1));
+            card.BorderBrush = borderBrush;
+            card.BorderThickness = new Thickness(1.5);
+            
+            // Glow effect
+            card.Effect = new DropShadowEffect
+            {
+                Color = Color.FromRgb(0, 229, 160),
+                BlurRadius = 15,
+                ShadowDepth = 0,
+                Opacity = 0.25
+            };
+
+            // Main horizontal layout: [Circular Battery Ring] [Device Info]
+            var mainGrid = new Grid();
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(70) }); // Ring
+            mainGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Info
+
+            // === LEFT: Circular Battery Ring ===
+            var ringContainer = new Grid
+            {
+                Width = 60,
+                Height = 60,
+                VerticalAlignment = VerticalAlignment.Center,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            // Background ring (dark)
+            var bgRing = new Ellipse
+            {
+                Width = 56,
+                Height = 56,
+                StrokeThickness = 5,
+                Stroke = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)),
+                Fill = Brushes.Transparent
+            };
+            ringContainer.Children.Add(bgRing);
+
+            // Progress ring (colored based on battery)
+            int batteryValue = device.BatteryLevel ?? 0;
+            var progressRing = CreateBatteryArc(batteryValue, device.IsConnected);
+            ringContainer.Children.Add(progressRing);
+
+            // Battery percentage text in center
+            var percentText = new TextBlock
+            {
+                Text = device.BatteryLevel.HasValue ? $"{device.BatteryLevel}%" : "?",
+                FontSize = 13,
+                FontWeight = FontWeights.Bold,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 244, 248)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            ringContainer.Children.Add(percentText);
+
+            Grid.SetColumn(ringContainer, 0);
+            mainGrid.Children.Add(ringContainer);
+
+            // === RIGHT: Device Info ===
+            var infoStack = new StackPanel
+            {
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(8, 0, 0, 0)
+            };
+
+            // Device name with gradient
+            var nameText = new TextBlock
+            {
+                Name = "DeviceName",
+                Text = displayName,
+                FontSize = 15,
+                FontWeight = FontWeights.SemiBold,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = CreateAuroraGradientBrush(),
+                TextTrimming = TextTrimming.CharacterEllipsis,
+                MaxWidth = 200
+            };
+            infoStack.Children.Add(nameText);
+
+            // Status with icon
+            var statusPanel = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 4, 0, 0) };
+            var statusDot = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = device.IsConnected 
+                    ? new SolidColorBrush(Color.FromRgb(0, 230, 118))
+                    : new SolidColorBrush(Color.FromRgb(107, 138, 153)),
+                Margin = new Thickness(0, 0, 6, 0),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            // Add pulsing animation for connected devices
+            if (device.IsConnected)
+            {
+                var pulseAnim = new System.Windows.Media.Animation.DoubleAnimation
+                {
+                    From = 0.5,
+                    To = 1.0,
+                    Duration = TimeSpan.FromSeconds(1),
+                    AutoReverse = true,
+                    RepeatBehavior = System.Windows.Media.Animation.RepeatBehavior.Forever
+                };
+                statusDot.BeginAnimation(Ellipse.OpacityProperty, pulseAnim);
+            }
+            statusPanel.Children.Add(statusDot);
+            
+            var statusText = new TextBlock
+            {
+                Name = "StatusText",
+                Text = device.IsConnected ? "Connected" : "Offline",
+                FontSize = 11,
+                FontFamily = new FontFamily("Segoe UI"),
+                Foreground = new SolidColorBrush(Color.FromRgb(107, 138, 153)),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            statusPanel.Children.Add(statusText);
+            infoStack.Children.Add(statusPanel);
+
+            // Battery stats
+            if (device.BatteryLevel.HasValue && device.IsConnected)
+            {
+                var statsText = new TextBlock
+                {
+                    Name = "StatsText",
+                    Text = BatteryTracker.GetSummaryText(device.Id),
+                    FontSize = 11,
+                    FontFamily = new FontFamily("Segoe UI"),
+                    Foreground = new SolidColorBrush(Color.FromRgb(224, 64, 251)),
+                    Margin = new Thickness(0, 4, 0, 0)
+                };
+                infoStack.Children.Add(statsText);
+            }
+
+            Grid.SetColumn(infoStack, 1);
+            mainGrid.Children.Add(infoStack);
+
+            card.Child = mainGrid;
+
+            // Hover effects
+            card.MouseEnter += (s, e) =>
+            {
+                card.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0, 229, 160),
+                    BlurRadius = 30,
+                    ShadowDepth = 0,
+                    Opacity = 0.5
+                };
+                card.RenderTransform = new ScaleTransform(1.02, 1.02);
+                card.RenderTransformOrigin = new Point(0.5, 0.5);
+            };
+            card.MouseLeave += (s, e) =>
+            {
+                card.Effect = new DropShadowEffect
+                {
+                    Color = Color.FromRgb(0, 229, 160),
+                    BlurRadius = 15,
+                    ShadowDepth = 0,
+                    Opacity = 0.25
+                };
+                card.RenderTransform = null;
+            };
+
+            // Add context menu
+            var contextMenu = new ContextMenu
+            {
+                Background = new SolidColorBrush(Color.FromRgb(26, 35, 50)),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(0, 229, 160)),
+                BorderThickness = new Thickness(1)
+            };
+            var renameItem = new MenuItem
+            {
+                Header = "✏️ Rename Device",
+                Foreground = new SolidColorBrush(Color.FromRgb(232, 244, 248))
+            };
+            renameItem.Click += (s, e) => RenameDevice(device.Id, device.Name);
+            contextMenu.Items.Add(renameItem);
+            card.ContextMenu = contextMenu;
+
+            return card;
+        }
+
+        /// <summary>
+        /// Creates a circular arc path for the battery level indicator
+        /// </summary>
+        private Path CreateBatteryArc(int percentage, bool isConnected)
+        {
+            var path = new Path
+            {
+                StrokeThickness = 5,
+                StrokeStartLineCap = PenLineCap.Round,
+                StrokeEndLineCap = PenLineCap.Round,
+                Width = 56,
+                Height = 56
+            };
+
+            // Color based on battery level
+            Color arcColor;
+            if (!isConnected)
+                arcColor = Color.FromRgb(107, 138, 153); // Grey for offline
+            else if (percentage >= 50)
+                arcColor = Color.FromRgb(0, 230, 118); // Green
+            else if (percentage >= 20)
+                arcColor = Color.FromRgb(255, 215, 64); // Amber
+            else
+                arcColor = Color.FromRgb(255, 82, 82); // Red
+
+            // Create gradient for the arc
+            var arcBrush = new LinearGradientBrush
+            {
+                StartPoint = new Point(0, 0),
+                EndPoint = new Point(1, 1)
+            };
+            arcBrush.GradientStops.Add(new GradientStop(arcColor, 0));
+            arcBrush.GradientStops.Add(new GradientStop(Color.FromArgb(200, arcColor.R, arcColor.G, arcColor.B), 1));
+            path.Stroke = arcBrush;
+
+            // Add glow to the arc
+            path.Effect = new DropShadowEffect
+            {
+                Color = arcColor,
+                BlurRadius = 8,
+                ShadowDepth = 0,
+                Opacity = 0.6
+            };
+
+            // Calculate arc
+            double angle = (percentage / 100.0) * 360;
+            double radius = 25.5;
+            double centerX = 28;
+            double centerY = 28;
+
+            // Start from top (12 o'clock position)
+            double startAngle = -90;
+            double endAngle = startAngle + angle;
+
+            double startX = centerX + radius * Math.Cos(startAngle * Math.PI / 180);
+            double startY = centerY + radius * Math.Sin(startAngle * Math.PI / 180);
+            double endX = centerX + radius * Math.Cos(endAngle * Math.PI / 180);
+            double endY = centerY + radius * Math.Sin(endAngle * Math.PI / 180);
+
+            bool isLargeArc = angle > 180;
+
+            var geometry = new PathGeometry();
+            var figure = new PathFigure { StartPoint = new Point(startX, startY) };
+            
+            var arcSegment = new ArcSegment
+            {
+                Point = new Point(endX, endY),
+                Size = new Size(radius, radius),
+                IsLargeArc = isLargeArc,
+                SweepDirection = SweepDirection.Clockwise
+            };
+            
+            figure.Segments.Add(arcSegment);
+            geometry.Figures.Add(figure);
+            path.Data = geometry;
+
+            return path;
         }
 
         private string GetBatteryIcon(int? batteryLevel)
@@ -1489,7 +2223,27 @@ Made with love for gamers who need to know when their headset is about to die mi
 
         protected override void OnClosed(EventArgs e)
         {
+            // Stop all timers to prevent memory leaks
             refreshTimer?.Stop();
+            refreshTimer = null;
+            
+            networkSpeedTimer?.Stop();
+            networkSpeedTimer = null;
+            
+            marqueeTimer?.Stop();
+            marqueeTimer = null;
+            
+            progressAnimationTimer?.Stop();
+            progressAnimationTimer = null;
+            
+            // Dispose network helper
+            _networkSpeedHelper?.Dispose();
+            _networkSpeedHelper = null;
+            
+            // Clear collections to free memory
+            _currentDevices.Clear();
+            _deviceCards.Clear();
+            _championQuotes.Clear();
             
             // Dispose tray icon
             if (_trayIcon != null)
@@ -1498,6 +2252,10 @@ Made with love for gamers who need to know when their headset is about to die mi
                 _trayIcon.Dispose();
                 _trayIcon = null;
             }
+            
+            // Force garbage collection
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
             
             base.OnClosed(e);
         }

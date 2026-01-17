@@ -18,6 +18,9 @@
 
   <ItemGroup>
     <PackageReference Include="Autoupdater.NET.Official" Version="1.9.2" />
+    <PackageReference Include="HandyControl" Version="3.5.1" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.11" />
+    <PackageReference Include="MaterialDesignThemes" Version="5.3.0" />
     <PackageReference Include="System.Management" Version="8.0.0" />
     <PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
   </ItemGroup>
@@ -33,6 +36,7 @@
     <Content Include="Assets\animation.mp4" Condition="Exists('Assets\animation.mp4')">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <!-- Kenney assets removed per request -->
   </ItemGroup>
 
   <!-- Exclude WinUI folder from WPF build -->
@@ -41,6 +45,8 @@
     <Page Remove="WinUI\**" />
     <None Remove="WinUI\**" />
     <Content Remove="WinUI\**" />
+    <Compile Remove="checkpoints\**\*.cs" />
+    <None Remove="checkpoints\**" />
   </ItemGroup>
 
 </Project>

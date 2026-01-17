@@ -158,6 +158,12 @@
                     </DataTemplate>
                 </GridView.ItemTemplate>
             </GridView>
+
+            <!-- Bottom-right Pixel Art (CSS converted) -->
+            <controls:PixelArtControl x:Name="MainPixelArt" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                      Width="320" Height="220" Panel.ZIndex="40"
+                                      Margin="0,0,24,120"
+                                      IsHitTestVisible="False" Opacity="0.95"/>
         </Grid>
     </Grid>
 </Window>

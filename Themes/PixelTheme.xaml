@@ -4,27 +4,120 @@
     <!-- PIXEL ART Dark Mode Theme - Retro CRT/Terminal Style -->
     <!-- Dark background with glowing green/amber accents -->
     
-    <SolidColorBrush x:Key="PrimaryBrush" Color="#00AA00"/>          <!-- Terminal green -->
-    <SolidColorBrush x:Key="SecondaryBrush" Color="#FFAA00"/>        <!-- Amber/Orange -->
-    <SolidColorBrush x:Key="AccentBrush" Color="#00FFAA"/>           <!-- Cyan accent -->
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#0D0D0D"/>       <!-- Near black -->
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#1A1A1A"/>          <!-- Dark gray surface -->
-    <SolidColorBrush x:Key="CardBrush" Color="#252525"/>             <!-- Slightly lighter cards -->
-    <SolidColorBrush x:Key="TextBrush" Color="#00FF00"/>             <!-- Bright green text -->
-    <SolidColorBrush x:Key="SubTextBrush" Color="#00AA00"/>          <!-- Dimmer green subtext -->
-    <SolidColorBrush x:Key="SuccessBrush" Color="#00FF00"/>          <!-- Bright green -->
-    <SolidColorBrush x:Key="WarningBrush" Color="#FFAA00"/>          <!-- Amber warning -->
-    <SolidColorBrush x:Key="DangerBrush" Color="#FF3333"/>           <!-- Red danger -->
-    <SolidColorBrush x:Key="TitleBarBrush" Color="#002200"/>         <!-- Dark green title bar -->
-    <SolidColorBrush x:Key="TitleTextBrush" Color="#00FF00"/>        <!-- Green title text -->
-    <SolidColorBrush x:Key="BorderBrush" Color="#00AA00"/>           <!-- Green border -->
-    <SolidColorBrush x:Key="BorderLightBrush" Color="#00FF00"/>      <!-- Bright green highlight -->
-    <SolidColorBrush x:Key="BorderDarkBrush" Color="#004400"/>       <!-- Dark green shadow -->
-    <SolidColorBrush x:Key="ProgressBlockBrush" Color="#00FF00"/>    <!-- Green progress blocks -->
-    <SolidColorBrush x:Key="ProgressBarBgBrush" Color="#001100"/>    <!-- Very dark green bg -->
     
+    <!-- Core brushes (ensure all themes provide common keys) -->
+    <SolidColorBrush x:Key="PrimaryBrush" Color="#00FF00"/>
+    <SolidColorBrush x:Key="SecondaryBrush" Color="#00AA00"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#A7FF7F"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#0B0B0B"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#111111"/>
+    <SolidColorBrush x:Key="CardBrush" Color="#1A1A1A"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#B8FFB8"/>
+    <SolidColorBrush x:Key="SubTextBrush" Color="#6B8E6B"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#00FF88"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#FFB800"/>
+    <SolidColorBrush x:Key="DangerBrush" Color="#FF3366"/>
+    <SolidColorBrush x:Key="TitleBarBrush" Color="#111111"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#00FF00"/>
+
     <!-- Theme identifier -->
     <system:String x:Key="ThemeName" xmlns:system="clr-namespace:System;assembly=mscorlib">PIXEL</system:String>
     <system:String x:Key="ThemeFont" xmlns:system="clr-namespace:System;assembly=mscorlib">Consolas</system:String>
+
+    
+    <!-- Kenney integration resources -->
+    <!-- 9-slice margin for rounded panels -->
+    <Thickness x:Key="KenneyNineSlice">12</Thickness>
+
+    <!-- Color logic per spec -->
+    <SolidColorBrush x:Key="KenneyConfirmBrush" Color="#2ecc71"/>
+    <SolidColorBrush x:Key="KenneyCancelBrush" Color="#e74c3c"/>
+    <SolidColorBrush x:Key="KenneyNavBrush" Color="#3498db"/>
+
+    <!-- Button sprite offsets (simulate sprite shift: normal=0, pressed=2) -->
+    <sys:Int32 x:Key="KenneyButtonPressOffset" xmlns:sys="clr-namespace:System;assembly=mscorlib">2</sys:Int32>
+
+    <!-- Label style: 15px horizontal padding -->
+    <Style x:Key="KenneyLabelStyle" TargetType="TextBlock">
+        <Setter Property="Padding" Value="15,0"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="FontFamily" Value="{StaticResource ThemeFont}"/>
+    </Style>
+
+    <!-- Pixel-exclusive card style (CRT blocky) -->
+    <Style x:Key="DeviceItemStyle" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource CardBrush}"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Margin" Value="0,0,0,10"/>
+        <Setter Property="BorderThickness" Value="2"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect Color="#00FF00" BlurRadius="8" ShadowDepth="0" Opacity="0.25"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#1A1A1A"/>
+                <Setter Property="BorderBrush" Value="{StaticResource SecondaryBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Pixel-exclusive button style (flat terminal) -->
+    <Style x:Key="ThemedButtonStyle" TargetType="Button">
+        <Setter Property="Background" Value="#111"/>
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,4"/>
+        <Setter Property="BorderBrush" Value="#000000"/>
+        <Setter Property="Padding" Value="15,6"/>
+        <Setter Property="FontFamily" Value="Consolas"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="RootGrid">
+                        <!-- Background panel (supports nine-slice via CornerRadius and outer Padding) -->
+                        <Border x:Name="SpriteBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter x:Name="contentPresenter" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="15,0"/>
+                        </Border>
+                        <!-- Darker bottom border to simulate sprite bottom edge -->
+                        <Border x:Name="BottomEdge" Height="4" VerticalAlignment="Bottom" Background="#0B0B0B" CornerRadius="0,0,6,6"/>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="SpriteBorder" Property="Background" Value="#161616"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <!-- shift content down by KenneyButtonPressOffset to simulate sprite press -->
+                            <Setter TargetName="contentPresenter" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="{StaticResource KenneyButtonPressOffset}"/>
+                                </Setter.Value>
+                            </Setter>
+                            <!-- make bottom edge appear deeper on press -->
+                            <Setter TargetName="BottomEdge" Property="Height" Value="2"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="False">
+                            <Setter TargetName="contentPresenter" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TranslateTransform Y="0"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="BottomEdge" Property="Height" Value="4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     
 </ResourceDictionary>

@@ -295,7 +295,8 @@ namespace BluetoothWidget
         public async Task<List<WindowsBluetoothDevice>> GetConnectedDevicesAsync()
         {
             // Get battery levels from PnP device tree (HFP devices with DEVPKEY_Bluetooth_Battery)
-            var pnpBatteries = GetBatteryFromPnpDevices();
+            // Run the PnP scan on a background thread to avoid blocking the UI thread
+            var pnpBatteries = await Task.Run(() => GetBatteryFromPnpDevices());
             Log($"[PnP Batteries] Got {pnpBatteries.Count} batteries from PnP");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // Faster timeout
