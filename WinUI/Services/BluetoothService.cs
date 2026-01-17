@@ -226,14 +226,40 @@ public class BluetoothService
         if (string.IsNullOrWhiteSpace(name))
             return false;
 
-        // Exclude system/internal device names
+        // Whitelist: Known consumer brands - always show these
+        var knownBrands = new[]
+        {
+            // Gaming brands
+            "ROCCAT", "HyperX", "Razer", "Logitech", "SteelSeries", "Corsair", 
+            "Turtle Beach", "Astro", "ASUS", "ROG", "Alienware", "MSI",
+            // Audio brands
+            "Sony", "Bose", "JBL", "Sennheiser", "Audio-Technica", "Beats", 
+            "AirPods", "Samsung", "Jabra", "Anker", "Soundcore", "Skullcandy",
+            "Bang & Olufsen", "B&O", "Shure", "Beyerdynamic", "AKG", "Focal",
+            "Philips", "Denon", "Pioneer", "Bowers & Wilkins", "Marshall",
+            "Harman Kardon", "OnePlus", "Xiaomi", "Huawei", "Oppo", "Vivo",
+            "LG", "Motorola", "Nokia", "Edifier", "1MORE", "Audio Pro",
+            // Other brands
+            "Apple", "Google", "Microsoft Surface", "Plantronics", "Poly",
+            "Creative", "Urbanears", "Master & Dynamic", "Grado", "Jaybird",
+            "Aftershokz", "Shokz", "Taotronics", "Mpow", "TaoTronics",
+            "Aukey", "Tronsmart", "Tribit", "JLab", "Soundpeats", "Tozo"
+        };
+
+        foreach (var brand in knownBrands)
+        {
+            if (name.Contains(brand, StringComparison.OrdinalIgnoreCase))
+                return true;
+        }
+
+        // Exclude system/internal device names (only for non-branded devices)
         var lower = name.ToLowerInvariant();
         var excluded = new[]
         {
             "bluetooth", "adapter", "radio", "controller", "host",
             "virtual", "enumerator", "port", "serial", "com",
             "microsoft", "windows", "generic", "unknown",
-            "le_", "_le", "-le", "gatt"
+            "le_", "_le", "-le", "gatt", "rfcomm", "hci", "avrcp", "a2dp"
         };
 
         foreach (var ex in excluded)
@@ -242,6 +268,6 @@ public class BluetoothService
                 return false;
         }
 
-        return true;
+        return name.Length > 2;
     }
 }
