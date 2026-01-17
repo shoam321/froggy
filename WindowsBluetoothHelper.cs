@@ -364,7 +364,9 @@ namespace BluetoothWidget
                         sw.WriteLine($"[{DateTime.Now:O}] Detected USB dongles: {usbDongles.Count}");
                         foreach (var d in usbDongles)
                         {
-                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand}");
+                            var batteryStr = d.BatteryLevel.HasValue ? $"{d.BatteryLevel}%" : "N/A";
+                            var chargingStr = d.IsCharging.HasValue ? (d.IsCharging.Value ? " (Charging)" : " (Discharging)") : "";
+                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand} Battery={batteryStr}{chargingStr}");
                         }
                     }
                     catch { }
@@ -379,8 +381,8 @@ namespace BluetoothWidget
                         {
                             Name = d.Name,
                             Id = d.DeviceId,
-                            IsConnected = false,  // Dongle presence doesn't indicate device connectivity
-                            BatteryLevel = null,
+                            IsConnected = d.BatteryLevel.HasValue,  // If we have battery, device is connected
+                            BatteryLevel = d.BatteryLevel,
                             IsBatteryFallback = false
                         };
 
