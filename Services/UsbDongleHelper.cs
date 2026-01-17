@@ -28,7 +28,8 @@ namespace BluetoothWidget.Services
 
             try
             {
-                using var searcher = new ManagementObjectSearcher("SELECT DeviceID, Name FROM Win32_PnPEntity WHERE DeviceID LIKE '%VID_%'");
+                // Filter by known vendor IDs in the WMI query for better performance
+                using var searcher = new ManagementObjectSearcher("SELECT DeviceID, Name FROM Win32_PnPEntity WHERE DeviceID LIKE '%VID_1E7D%' OR DeviceID LIKE '%VID_0951%' OR DeviceID LIKE '%VID_03F0%'");
                 using var collection = searcher.Get();
 
                 foreach (ManagementObject mo in collection)

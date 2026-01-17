@@ -363,7 +363,7 @@ namespace BluetoothWidget
                         System.IO.Directory.CreateDirectory(diagDir);
                         var diagPath = System.IO.Path.Combine(diagDir, "diag.txt");
                         using var sw = new System.IO.StreamWriter(diagPath, append: true);
-                        sw.WriteLine($"[{DateTime.Now:O}] Detected USB dongles: {usbDongles.Count}");
+                        sw.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Detected USB dongles: {usbDongles.Count}");
                         foreach (var d in usbDongles)
                         {
                             sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand}");
@@ -371,9 +371,12 @@ namespace BluetoothWidget
                     }
                     catch { }
 
+                    // Use HashSet for O(1) duplicate checking instead of O(n) LINQ Any()
+                    var existingIds = new HashSet<string>(results.Select(r => r.Id), StringComparer.OrdinalIgnoreCase);
+
                     foreach (var d in usbDongles)
                     {
-                        if (results.Any(r => string.Equals(r.Id, d.DeviceId, StringComparison.OrdinalIgnoreCase)))
+                        if (existingIds.Contains(d.DeviceId))
                             continue;
 
                         var mapped = new WindowsBluetoothDevice
@@ -386,6 +389,7 @@ namespace BluetoothWidget
                         };
 
                         results.Add(mapped);
+                        existingIds.Add(d.DeviceId);
                     }
                 }
             }
