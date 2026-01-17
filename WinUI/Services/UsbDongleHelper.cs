@@ -107,6 +107,8 @@ namespace BluetoothWidget.Services
         private const uint FILE_SHARE_READ = 0x00000001;
         private const uint FILE_SHARE_WRITE = 0x00000002;
         private const uint OPEN_EXISTING = 3;
+        private const int DETAIL_DATA_SIZE_64BIT = 8;
+        private const int DETAIL_DATA_SIZE_32BIT = 6;
         private static readonly IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         #endregion
@@ -238,8 +240,8 @@ namespace BluetoothWidget.Services
                     IntPtr detailDataBuffer = Marshal.AllocHGlobal((int)requiredSize);
                     try
                     {
-                        // First 4 bytes are cbSize
-                        Marshal.WriteInt32(detailDataBuffer, IntPtr.Size == 8 ? 8 : 6);
+                        // First 4 bytes are cbSize (size depends on platform)
+                        Marshal.WriteInt32(detailDataBuffer, IntPtr.Size == 8 ? DETAIL_DATA_SIZE_64BIT : DETAIL_DATA_SIZE_32BIT);
 
                         if (SetupDiGetDeviceInterfaceDetail(
                             deviceInfoSet,
@@ -313,8 +315,6 @@ namespace BluetoothWidget.Services
                     if (battery.HasValue)
                     {
                         string deviceKey = $"{vid}:{pid}";
-                        // ROCCAT Report format: [0]=ReportID, [1]=Battery%, [2]=Charging(0/1)
-                        // For now, we'll just extract battery level
                         batteryMap[deviceKey] = (battery.Value.level, battery.Value.charging);
                     }
                 }
@@ -368,7 +368,8 @@ namespace BluetoothWidget.Services
                         int batteryLevel = buffer[1];
                         if (batteryLevel >= 0 && batteryLevel <= 100)
                         {
-                            return (batteryLevel, false); // Unknown charging status
+                            // Note: Charging status defaults to false when unknown (Report 0x04 doesn't include it)
+                            return (batteryLevel, false);
                         }
                     }
                 }
