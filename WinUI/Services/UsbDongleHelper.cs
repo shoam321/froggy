@@ -47,13 +47,11 @@ namespace BluetoothWidget.Services
                         if (!KnownVendorVids.Contains(vid))
                             continue;
 
-                        string? brand = vid.Equals("1E7D", StringComparison.OrdinalIgnoreCase) ? "ROCCAT" :
-                                         (vid.Equals("0951", StringComparison.OrdinalIgnoreCase) || vid.Equals("03F0", StringComparison.OrdinalIgnoreCase)) ? "HyperX" :
-                                         null;
+                        string? brand = GetBrandFromVid(vid);
 
                         results.Add(new UsbDongleDevice
                         {
-                            Name = string.IsNullOrWhiteSpace(name) ? $"{brand ?? "USB Dongle"} (Dongle)" : name,
+                            Name = string.IsNullOrWhiteSpace(name) ? $"{brand ?? "Unknown"} USB Dongle" : name,
                             DeviceId = deviceId,
                             VendorId = vid,
                             ProductId = pid,
@@ -72,6 +70,16 @@ namespace BluetoothWidget.Services
             }
 
             return results;
+        }
+
+        private static string? GetBrandFromVid(string vid)
+        {
+            if (vid.Equals("1E7D", StringComparison.OrdinalIgnoreCase))
+                return "ROCCAT";
+            if (vid.Equals("0951", StringComparison.OrdinalIgnoreCase) || 
+                vid.Equals("03F0", StringComparison.OrdinalIgnoreCase))
+                return "HyperX";
+            return null;
         }
 
         private static string ExtractToken(string deviceId, string token)

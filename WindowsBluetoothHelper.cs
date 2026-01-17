@@ -379,16 +379,20 @@ namespace BluetoothWidget
                         {
                             Name = d.Name,
                             Id = d.DeviceId,
-                            IsConnected = true,
+                            IsConnected = false,  // Dongle presence doesn't indicate device connectivity
                             BatteryLevel = null,
                             IsBatteryFallback = false
                         };
 
-                        // Add to merged dictionary by name
-                        if (!merged.ContainsKey(mapped.Name))
+                        // Add to merged dictionary by name - ensure unique names
+                        var key = mapped.Name;
+                        var suffix = 1;
+                        while (merged.ContainsKey(key))
                         {
-                            merged[mapped.Name] = mapped;
+                            key = $"{mapped.Name} ({suffix})";
+                            suffix++;
                         }
+                        merged[key] = mapped;
                     }
                 }
             }
