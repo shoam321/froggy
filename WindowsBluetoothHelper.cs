@@ -87,6 +87,101 @@ namespace BluetoothWidget
             "System.Devices.Aep.Bluetooth.BatteryLevel",
         };
 
+        // Dongle HID battery mapping
+        private static readonly List<DongleHidMapping> DongleMappings = new()
+        {
+            new DongleHidMapping("Cloud II Wireless", 0x01, 1, 100),
+            new DongleHidMapping("Cloud Alpha", 0x05, 2, 255),
+            new DongleHidMapping("Cloud III", 0x05, 2, 255),
+            new DongleHidMapping("Pulsefire", 0x04, 1, 100),
+        };
+
+        public class DongleHidMapping
+        {
+            public string Model { get; }
+            public byte ReportId { get; }
+            public int BatteryByteIndex { get; }
+            public int MaxScale { get; }
+            public DongleHidMapping(string model, byte reportId, int batteryByteIndex, int maxScale)
+            {
+                Model = model;
+                ReportId = reportId;
+                BatteryByteIndex = batteryByteIndex;
+                MaxScale = maxScale;
+            }
+        }
+
+        // Probe HID dongle devices for battery
+        private static List<WindowsBluetoothDevice> GetDongleHidDevices()
+        {
+            var results = new List<WindowsBluetoothDevice>();
+            try
+            {
+                // Use HidSharp to enumerate HID devices
+                var deviceList = HidSharp.DeviceList.Local;
+                foreach (var hidDevice in deviceList.GetHidDevices())
+                {
+                    // Match by known VID/PID for supported dongle models
+                    foreach (var mapping in DongleMappings)
+                    {
+                        // Example: HyperX Cloud II Wireless dongle VID/PID
+                        // You may need to update these for each model
+                        if (IsMatchingDongle(hidDevice, mapping))
+                        {
+                            try
+                            {
+                                using (var stream = hidDevice.Open())
+                                {
+                                    var data = new byte[hidDevice.GetMaxFeatureReportLength()];
+                                    data[0] = mapping.ReportId;
+                                    stream.GetFeature(data);
+                                    if (data.Length > mapping.BatteryByteIndex)
+                                    {
+                                        int battery = ParseBattery(data, mapping.BatteryByteIndex, mapping.MaxScale);
+                                        results.Add(new WindowsBluetoothDevice
+                                        {
+                                            Name = mapping.Model,
+                                            Id = $"HID:{hidDevice.DevicePath}",
+                                            IsConnected = true,
+                                            BatteryLevel = battery
+                                        });
+                                    }
+                                }
+                            }
+                            catch { /* Ignore device errors */ }
+                        }
+                    }
+                }
+            }
+            catch { /* Ignore HID enumeration errors */ }
+            return results;
+        }
+
+        // Helper to match dongle by VID/PID/model
+        private static bool IsMatchingDongle(HidSharp.HidDevice device, DongleHidMapping mapping)
+        {
+            // Example: HyperX Cloud II Wireless dongle VID/PID
+            // You should update these for each supported dongle
+            // Cloud II Wireless: VID=0x0951, PID=0x16D8
+            // Cloud Alpha/III: VID=0x0951, PID=0x17E4/0x17E5
+            // Pulsefire: VID=0x0951, PID=0x16D2
+            if (mapping.Model.Contains("Cloud II") && device.VendorID == 0x0951 && device.ProductID == 0x16D8) return true;
+            if (mapping.Model.Contains("Cloud Alpha") && device.VendorID == 0x0951 && (device.ProductID == 0x17E4 || device.ProductID == 0x17E5)) return true;
+            if (mapping.Model.Contains("Cloud III") && device.VendorID == 0x0951 && device.ProductID == 0x17E5) return true;
+            if (mapping.Model.Contains("Pulsefire") && device.VendorID == 0x0951 && device.ProductID == 0x16D2) return true;
+            // Add more dongle VID/PID checks as needed
+            return false;
+        }
+
+        private static int ParseBattery(byte[] data, int index, int maxScale)
+        {
+            if (data == null || data.Length <= index) return -1;
+            int raw = data[index];
+            if (maxScale == 100) return raw;
+            if (maxScale == 255) return (int)Math.Round(raw * 100.0 / 255.0);
+            return raw;
+        }
+
         private static readonly string[] AepConnectedPropertyKeys =
         {
             "System.Devices.Aep.IsConnected",
@@ -298,6 +393,9 @@ namespace BluetoothWidget
             // Get battery levels from PnP device tree (HFP devices with DEVPKEY_Bluetooth_Battery)
             // Run the PnP scan on a background thread to avoid blocking the UI thread
             var pnpBatteries = await Task.Run(() => GetBatteryFromPnpDevices());
+
+            // Add dongle HID devices
+            var dongleDevices = GetDongleHidDevices();
             Log($"[PnP Batteries] Got {pnpBatteries.Count} batteries from PnP");
 
             using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5)); // Faster timeout
@@ -317,10 +415,7 @@ namespace BluetoothWidget
             var merged = new Dictionary<string, WindowsBluetoothDevice>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var d in classic)
-            {
                 merged[d.Name] = d;
-            }
-
             foreach (var d in aep)
             {
                 if (merged.TryGetValue(d.Name, out var existing))
@@ -331,11 +426,8 @@ namespace BluetoothWidget
                         existing.Id = d.Id;
                 }
                 else
-                {
                     merged[d.Name] = d;
-                }
             }
-
             foreach (var d in ble)
             {
                 if (merged.TryGetValue(d.Name, out var existing))
@@ -346,9 +438,13 @@ namespace BluetoothWidget
                         existing.Id = d.Id;
                 }
                 else
-                {
                     merged[d.Name] = d;
-                }
+            }
+            // Add dongle HID devices (do not overwrite existing)
+            foreach (var d in dongleDevices)
+            {
+                if (!merged.ContainsKey(d.Name))
+                    merged[d.Name] = d;
             }
 
             return merged.Values

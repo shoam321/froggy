@@ -884,6 +884,7 @@ Made with love for gamers who need to know when their headset is about to die mi
             try
             {
                 var deviceInfo = new WindowsBluetoothHelper();
+                // Devices now include dongle HID battery support (Cloud II, Alpha/III, Pulsefire, etc.)
                 var devices = await deviceInfo.GetConnectedDevicesAsync();
 
                 // Only show connected devices

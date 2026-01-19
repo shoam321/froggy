@@ -195,38 +195,38 @@ namespace BluetoothWidget
             lock (_lock)
             {
                 var stats = new BatteryStats();
-
                 try
                 {
                     if (!_history.TryGetValue(deviceId, out var history) || history.Readings.Count < 2)
-                    {
                         return stats;
-                    }
 
                     var readings = history.Readings.OrderBy(r => r.Timestamp).ToList();
                     var now = DateTime.Now;
 
-                    // Find the last "charge" event (where battery went UP or was at 100%)
-                    int chargeIndex = -1;
-                    for (int i = readings.Count - 1; i > 0; i--)
+                    // Use a moving window (last 60 minutes) for drain rate calculation
+                    var windowMinutes = 60;
+                    var windowStart = now.AddMinutes(-windowMinutes);
+                    var windowReadings = readings.Where(r => r.Timestamp >= windowStart).ToList();
+                    if (windowReadings.Count < 2)
                     {
-                        if (readings[i].BatteryLevel > readings[i - 1].BatteryLevel || 
-                            readings[i].BatteryLevel >= 95)
+                        // Not enough readings in window, fall back to all readings since last charge
+                        // Find the last "charge" event (where battery went UP or was at 100%)
+                        int chargeIndex = -1;
+                        for (int i = readings.Count - 1; i > 0; i--)
                         {
-                            chargeIndex = i;
-                            break;
+                            if (readings[i].BatteryLevel > readings[i - 1].BatteryLevel || readings[i].BatteryLevel >= 95)
+                            {
+                                chargeIndex = i;
+                                break;
+                            }
                         }
+                        windowReadings = chargeIndex >= 0 ? readings.Skip(chargeIndex).ToList() : readings;
                     }
 
-                    // Get readings since last charge (or all if no charge detected)
-                    var relevantReadings = chargeIndex >= 0 
-                        ? readings.Skip(chargeIndex).ToList() 
-                        : readings;
-
-                    if (relevantReadings.Count >= 2)
+                    if (windowReadings.Count >= 2)
                     {
-                        var first = relevantReadings.First();
-                        var last = relevantReadings.Last();
+                        var first = windowReadings.First();
+                        var last = windowReadings.Last();
                         var elapsed = last.Timestamp - first.Timestamp;
                         var drained = first.BatteryLevel - last.BatteryLevel;
 
@@ -236,7 +236,6 @@ namespace BluetoothWidget
                         if (drained > 0 && elapsed.TotalHours > 0.1) // At least 6 minutes of data
                         {
                             stats.DrainRatePerHour = drained / elapsed.TotalHours;
-                            
                             if (stats.DrainRatePerHour > 0.1) // Meaningful drain rate
                             {
                                 var hoursRemaining = last.BatteryLevel / stats.DrainRatePerHour.Value;
@@ -249,7 +248,6 @@ namespace BluetoothWidget
                 {
                     App.LogToFile("BatteryTracker.GetStats", ex);
                 }
-
                 return stats;
             }
         }
