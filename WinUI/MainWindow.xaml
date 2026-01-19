@@ -107,7 +107,7 @@
                 </GridView.ItemContainerStyle>
                 <GridView.ItemTemplate>
                     <DataTemplate x:DataType="vm:BluetoothDeviceViewModel">
-                        <!-- Dark Glass Card -->
+                        <!-- Universal Device Card: All info always shown, only colors/fonts change by theme -->
                         <Border CornerRadius="20"
                                 Padding="16"
                                 PointerEntered="Card_PointerEntered"
@@ -121,13 +121,11 @@
                             <Border.Shadow>
                                 <ThemeShadow/>
                             </Border.Shadow>
-                            
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="*"/>
                                     <RowDefinition Height="Auto"/>
                                 </Grid.RowDefinitions>
-
                                 <!-- Battery Ring with Glow -->
                                 <Grid Grid.Row="0" HorizontalAlignment="Center" VerticalAlignment="Center">
                                     <controls:GlowingBatteryRing 
@@ -135,17 +133,15 @@
                                         TimeRemaining="{x:Bind TimeRemainingText, Mode=OneWay}"
                                         Width="90" Height="90"/>
                                 </Grid>
-
                                 <!-- Device Info -->
                                 <StackPanel Grid.Row="1" Spacing="6" Margin="0,12,0,0">
                                     <TextBlock Text="{x:Bind Name}"
                                                FontSize="14"
                                                FontWeight="SemiBold"
-                                               Foreground="White"
+                                               Foreground="{ThemeResource SystemAccentColor}
                                                TextTrimming="CharacterEllipsis"
                                                HorizontalAlignment="Center"
                                                MaxLines="1"/>
-                                    
                                     <StackPanel Orientation="Horizontal" 
                                                 HorizontalAlignment="Center"
                                                 Spacing="6">
@@ -153,23 +149,25 @@
                                                  Fill="{x:Bind ConnectionStatusBrush, Mode=OneWay}"/>
                                         <TextBlock Text="{x:Bind ConnectionStatusText, Mode=OneWay}"
                                                    FontSize="11"
-                                                   Foreground="#888888"/>
+                                                   Foreground="{ThemeResource SystemAccentColor}"/>
                                     </StackPanel>
-
-
-                                    <!-- Time Tracking Info -->
+                                    <!-- Battery % -->
+                                    <TextBlock Text="{x:Bind BatteryLevel, Mode=OneWay}"
+                                               FontSize="13"
+                                               FontWeight="Bold"
+                                               Foreground="{ThemeResource SystemAccentColor}" 
+                                               HorizontalAlignment="Center"/>
+                                    <!-- Drain Rate & Tracking Info -->
                                     <TextBlock Text="{x:Bind TrackingInfoText, Mode=OneWay}"
                                                FontSize="10"
-                                               Foreground="#64B5F6"
+                                               Foreground="{ThemeResource SystemAccentColorLight1}"
                                                HorizontalAlignment="Center"
                                                Visibility="{x:Bind HasTrackingInfo, Mode=OneWay}"/>
-
                                     <!-- DEBUG: Always-visible label to confirm template is active -->
                                     <TextBlock Text="DEBUG TEMPLATE ACTIVE"
                                                FontSize="10"
                                                Foreground="#FF00FF"
                                                HorizontalAlignment="Center"/>
-
                                     <!-- DEBUG: Show Device ID and Raw Summary -->
                                     <TextBlock Text="{x:Bind Id, Mode=OneWay}"
                                                FontSize="9"

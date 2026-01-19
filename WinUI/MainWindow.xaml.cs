@@ -195,6 +195,17 @@ public sealed partial class MainWindow : Window
     private async void DrainageTestButton_Click(object sender, RoutedEventArgs e)
     {
         BluetoothDeviceViewModel.RunDrainageTest();
+        // Add the test device to the device list for instant UI verification
+        string testId = "TEST-DEVICE-123";
+        string testName = "Test Headphones";
+        var testVm = new BluetoothDeviceViewModel()
+        {
+            Name = testName,
+            Id = testId,
+            IsConnected = true,
+            BatteryLevel = 40 // Last simulated value
+        };
+        _devices.Add(testVm);
         // Read the test log and show result
         var wsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "drainage_test_log.txt");
         string result = "Drainage test log not found.";
