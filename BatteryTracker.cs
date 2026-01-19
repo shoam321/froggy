@@ -262,12 +262,11 @@ namespace BluetoothWidget
                 var stats = GetStats(deviceId);
                 var parts = new List<string>();
 
-                if (stats.DrainRatePerHour.HasValue && stats.DrainRatePerHour.Value > 0.1)
+                if (stats.DrainRatePerHour.HasValue && stats.DrainRatePerHour.Value > 0)
                 {
                     double perHour = stats.DrainRatePerHour.Value;
                     double per10Min = perHour / 6.0;
                     parts.Add($"-{per10Min:F1}%/10min");
-                    
                     if (stats.EstimatedTimeRemaining.HasValue)
                     {
                         parts.Add($"~{FormatTimeSpan(stats.EstimatedTimeRemaining.Value)} left");
@@ -282,7 +281,6 @@ namespace BluetoothWidget
                         var firstReading = readings.First();
                         var lastReading = readings.Last();
                         var elapsed = DateTime.Now - firstReading.Timestamp;
-                        
                         if (elapsed.TotalMinutes < 2)
                         {
                             parts.Add("Tracking...");

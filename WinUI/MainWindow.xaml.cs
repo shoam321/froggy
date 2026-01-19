@@ -20,7 +20,7 @@ public sealed partial class MainWindow : Window
     private readonly DispatcherTimer _refreshTimer;
     private MicaController? _micaController;
     private SystemBackdropConfiguration? _configurationSource;
-    private bool _useMockData = true; // Set to false for real Bluetooth data
+    private bool _useMockData = false; // Set to false for real Bluetooth data
 
     public MainWindow()
     {
@@ -190,5 +190,24 @@ public sealed partial class MainWindow : Window
             border.Scale = new System.Numerics.Vector3(1f, 1f, 1f);
             border.Translation = new System.Numerics.Vector3(0, 0, 8);
         }
+    }
+
+    private async void DrainageTestButton_Click(object sender, RoutedEventArgs e)
+    {
+        BluetoothDeviceViewModel.RunDrainageTest();
+        // Read the test log and show result
+        var wsPath = System.IO.Path.Combine(System.AppDomain.CurrentDomain.BaseDirectory, "drainage_test_log.txt");
+        string result = "Drainage test log not found.";
+        if (System.IO.File.Exists(wsPath))
+        {
+            result = System.IO.File.ReadAllText(wsPath);
+        }
+        var dialog = new ContentDialog
+        {
+            Title = "Battery Drainage Test Result",
+            Content = result,
+            CloseButtonText = "OK"
+        };
+        await dialog.ShowAsync();
     }
 }

@@ -46,6 +46,16 @@
                         VerticalAlignment="Center">
                     <FontIcon Glyph="&#xE72C;" FontSize="14" Foreground="#AAAAAA"/>
                 </Button>
+                <!-- DEBUG: Drainage Test Button -->
+                <Button x:Name="DrainageTestButton"
+                        Content="Test Drainage"
+                        Click="DrainageTestButton_Click"
+                        Background="#333"
+                        Foreground="#FF00FF"
+                        FontSize="12"
+                        Padding="8,2"
+                        Margin="8,0,0,0"
+                        ToolTipService.ToolTip="Run battery drainage test"/>
             </StackPanel>
         </Grid>
 
@@ -146,12 +156,29 @@
                                                    Foreground="#888888"/>
                                     </StackPanel>
 
+
                                     <!-- Time Tracking Info -->
                                     <TextBlock Text="{x:Bind TrackingInfoText, Mode=OneWay}"
                                                FontSize="10"
                                                Foreground="#64B5F6"
                                                HorizontalAlignment="Center"
                                                Visibility="{x:Bind HasTrackingInfo, Mode=OneWay}"/>
+
+                                    <!-- DEBUG: Always-visible label to confirm template is active -->
+                                    <TextBlock Text="DEBUG TEMPLATE ACTIVE"
+                                               FontSize="10"
+                                               Foreground="#FF00FF"
+                                               HorizontalAlignment="Center"/>
+
+                                    <!-- DEBUG: Show Device ID and Raw Summary -->
+                                    <TextBlock Text="{x:Bind Id, Mode=OneWay}"
+                                               FontSize="9"
+                                               Foreground="#FF8888"
+                                               HorizontalAlignment="Center"/>
+                                    <TextBlock Text="{x:Bind DebugSummary, Mode=OneWay}"
+                                               FontSize="9"
+                                               Foreground="#FF8888"
+                                               HorizontalAlignment="Center"/>
                                 </StackPanel>
                             </Grid>
                         </Border>
