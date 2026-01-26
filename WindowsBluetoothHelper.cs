@@ -447,7 +447,53 @@ namespace BluetoothWidget
                     merged[d.Name] = d;
             }
 
-            return merged.Values
+            var results = merged.Values.ToList();
+
+            // Integrate USB dongles (2.4GHz receivers) as devices so they appear in the UI
+            try
+            {
+                var usbDongles = BluetoothWidget.Services.UsbDongleHelper.GetUsbDongleDevices();
+                if (usbDongles != null && usbDongles.Count > 0)
+                {
+                    try
+                    {
+                        var diagDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BluetoothWidget");
+                        System.IO.Directory.CreateDirectory(diagDir);
+                        var diagPath = System.IO.Path.Combine(diagDir, "diag.txt");
+                        using var sw = new System.IO.StreamWriter(diagPath, append: true);
+                        sw.WriteLine($"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] Detected USB dongles: {usbDongles.Count}");
+                        foreach (var d in usbDongles)
+                        {
+                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand}");
+                        }
+                    }
+                    catch { }
+
+                    // Use HashSet for O(1) duplicate checking instead of O(n) LINQ Any()
+                    var existingIds = new HashSet<string>(results.Select(r => r.Id), StringComparer.OrdinalIgnoreCase);
+
+                    foreach (var d in usbDongles)
+                    {
+                        if (existingIds.Contains(d.DeviceId))
+                            continue;
+
+                        var mapped = new WindowsBluetoothDevice
+                        {
+                            Name = d.Name,
+                            Id = d.DeviceId,
+                            IsConnected = true,
+                            BatteryLevel = null,
+                            IsBatteryFallback = false
+                        };
+
+                        results.Add(mapped);
+                        existingIds.Add(d.DeviceId);
+                    }
+                }
+            }
+            catch { }
+
+            return results
                 .OrderByDescending(d => d.IsConnected)
                 .ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
