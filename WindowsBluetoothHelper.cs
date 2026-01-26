@@ -14,6 +14,7 @@ using Windows.Devices.Enumeration;
 using Windows.Networking.Sockets;
 using Windows.Security.Cryptography;
 using Windows.Storage.Streams;
+using BluetoothWidget.Services;
 
 namespace BluetoothWidget
 {
@@ -447,7 +448,49 @@ namespace BluetoothWidget
                     merged[d.Name] = d;
             }
 
-            return merged.Values
+            var results = merged.Values.ToList();
+
+            // Integrate USB dongles (2.4GHz receivers) as devices so they appear in the UI
+            try
+            {
+                var usbDongles = UsbDongleHelper.GetUsbDongleDevices();
+                if (usbDongles != null && usbDongles.Count > 0)
+                {
+                    try
+                    {
+                        var diagDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BluetoothWidget");
+                        System.IO.Directory.CreateDirectory(diagDir);
+                        var diagPath = System.IO.Path.Combine(diagDir, "diag.txt");
+                        using var sw = new System.IO.StreamWriter(diagPath, append: true);
+                        sw.WriteLine($"[{DateTime.Now:O}] Detected USB dongles: {usbDongles.Count}");
+                        foreach (var d in usbDongles)
+                        {
+                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand}");
+                        }
+                    }
+                    catch { }
+
+                    foreach (var d in usbDongles)
+                    {
+                        if (results.Any(r => string.Equals(r.Id, d.DeviceId, StringComparison.OrdinalIgnoreCase)))
+                            continue;
+
+                        var mapped = new WindowsBluetoothDevice
+                        {
+                            Name = d.Name,
+                            Id = d.DeviceId,
+                            IsConnected = true,
+                            BatteryLevel = null,
+                            IsBatteryFallback = false
+                        };
+
+                        results.Add(mapped);
+                    }
+                }
+            }
+            catch { }
+
+            return results
                 .OrderByDescending(d => d.IsConnected)
                 .ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
