@@ -447,6 +447,57 @@ namespace BluetoothWidget
                     merged[d.Name] = d;
             }
 
+            // Integrate USB dongles (2.4GHz receivers) as devices so they appear in the UI
+            try
+            {
+                var usbDongles = BluetoothWidget.Services.UsbDongleHelper.GetUsbDongleDevices();
+                if (usbDongles != null && usbDongles.Count > 0)
+                {
+                    try
+                    {
+                        var diagDir = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BluetoothWidget");
+                        System.IO.Directory.CreateDirectory(diagDir);
+                        var diagPath = System.IO.Path.Combine(diagDir, "diag.txt");
+                        using var sw = new System.IO.StreamWriter(diagPath, append: true);
+                        sw.WriteLine($"[{DateTime.Now:O}] Detected USB dongles: {usbDongles.Count}");
+                        foreach (var d in usbDongles)
+                        {
+                            var batteryStr = d.BatteryLevel.HasValue ? $"{d.BatteryLevel}%" : "N/A";
+                            var chargingStr = d.IsCharging.HasValue ? (d.IsCharging.Value ? " (Charging)" : " (Discharging)") : "";
+                            sw.WriteLine($"  Name='{d.Name}' Vid={d.VendorId} Pid={d.ProductId} Id={d.DeviceId} Brand={d.Brand} Battery={batteryStr}{chargingStr}");
+                        }
+                    }
+                    catch { }
+
+                    foreach (var d in usbDongles)
+                    {
+                        // Check if already exists by Id (avoid duplicates)
+                        if (merged.Values.Any(r => string.Equals(r.Id, d.DeviceId, StringComparison.OrdinalIgnoreCase)))
+                            continue;
+
+                        var mapped = new WindowsBluetoothDevice
+                        {
+                            Name = d.Name,
+                            Id = d.DeviceId,
+                            IsConnected = d.BatteryLevel.HasValue,  // If we have battery, device is connected
+                            BatteryLevel = d.BatteryLevel,
+                            IsBatteryFallback = false
+                        };
+
+                        // Add to merged dictionary by name - ensure unique names
+                        var key = mapped.Name;
+                        var suffix = 1;
+                        while (merged.ContainsKey(key))
+                        {
+                            key = $"{mapped.Name} ({suffix})";
+                            suffix++;
+                        }
+                        merged[key] = mapped;
+                    }
+                }
+            }
+            catch { }
+
             return merged.Values
                 .OrderByDescending(d => d.IsConnected)
                 .ThenBy(d => d.Name, StringComparer.OrdinalIgnoreCase)
